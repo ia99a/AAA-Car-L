@@ -127,6 +127,11 @@ public class SettingsActivity extends Activity {
             });
             toneRow.addView(chip);
         }
+        // إن كان النمط المختار خارج الجزء الظاهر من الصف، يُمرَّر إليه
+        toneRow.post(() -> {
+            View sel = toneRow.getChildAt(Tones.current(this));
+            if (sel != null) sel.requestRectangleOnScreen(new android.graphics.Rect(0, 0, sel.getWidth(), sel.getHeight()), true);
+        });
 
         // البار السفلي
         Switch sw = findViewById(R.id.switch_dock);

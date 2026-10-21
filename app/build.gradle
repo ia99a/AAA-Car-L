@@ -10,8 +10,8 @@ android {
         applicationId 'com.santafe.launcher'
         minSdk 24          // أندرويد ٧ فما فوق، يغطي شاشات السيارات الشائعة
         targetSdk 34
-        versionCode 10
-        versionName '1.9'
+        versionCode 11
+        versionName '1.9.1'
     }
 
     compileOptions {
