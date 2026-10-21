@@ -94,4 +94,11 @@
     <string name="pa_ch_soon">قبل الأذان</string>
     <string name="pa_ch_adhan">الأذان</string>
     <string name="pa_ch_iqama">قبل الإقامة</string>
+    <string name="set_tone_style">النغمة</string>
+    <string name="tone_bell">جرس ناعم</string>
+    <string name="tone_qanun">قانون</string>
+    <string name="tone_ney">ناي</string>
+    <string name="tone_crystal">كريستال</string>
+    <string name="tone_wind">أجراس ريح</string>
+    <string name="tone_marimba">ماريمبا</string>
 </resources>

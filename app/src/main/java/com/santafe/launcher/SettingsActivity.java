@@ -25,14 +25,17 @@ import java.util.List;
 public class SettingsActivity extends Activity {
 
     private final List<String> chosen = new ArrayList<>();
-    private int toneIndex = 1; // أول ضغطة تُسمعك نغمة الأذان
+    private int toneIndex = 1; // زر السماع: أول ضغطة تُسمعك نغمة الأذان ثم يتنقل بين الثلاث
     private android.media.MediaPlayer player;
 
     /** يُسمع النغمة كما ستُسمع في الإشعار */
     private void playTone(int res) {
-        if (player != null) player.release();
-        player = android.media.MediaPlayer.create(this, res);
-        if (player != null) { player.setOnCompletionListener(android.media.MediaPlayer::release); player.start(); }
+        if (player != null) { player.release(); player = null; }
+        android.media.MediaPlayer mp = android.media.MediaPlayer.create(this, res);
+        if (mp == null) return;
+        player = mp;
+        mp.setOnCompletionListener(done -> { done.release(); if (player == done) player = null; });
+        mp.start();
     }
 
     @Override
@@ -80,10 +83,36 @@ public class SettingsActivity extends Activity {
             PrayerAlerts.setEnabled(this, on);
             swP.setChecked(on);
         });
-        findViewById(R.id.btn_preview_tone).setOnClickListener(v -> {
-            int[] tones = {R.raw.chime_soon, R.raw.chime_adhan, R.raw.chime_iqama};
-            playTone(tones[toneIndex++ % 3]);
-        });
+        findViewById(R.id.btn_preview_tone).setOnClickListener(v ->
+                playTone(Tones.sound(Tones.current(this), toneIndex++ % 3)));
+
+        // مجموعة النغمات: الضغط يختار المجموعة ويُسمع نغمة الأذان منها
+        android.widget.LinearLayout toneRow = findViewById(R.id.tone_chips);
+        float dp = getResources().getDisplayMetrics().density;
+        for (int i = 0; i < Tones.STYLES.length; i++) {
+            final int style = i;
+            TextView chip = new TextView(this);
+            chip.setText(Tones.NAMES[i]);
+            chip.setTextColor(getColor(R.color.ink));
+            chip.setTextSize(14);
+            chip.setGravity(android.view.Gravity.CENTER);
+            chip.setBackgroundResource(R.drawable.chip_bg);
+            chip.setPadding((int) (14 * dp), 0, (int) (14 * dp), 0);
+            chip.setClickable(true);
+            chip.setFocusable(true);
+            android.widget.LinearLayout.LayoutParams lp =
+                    new android.widget.LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, (int) (38 * dp));
+            if (i > 0) lp.setMarginStart((int) (6 * dp));
+            chip.setLayoutParams(lp);
+            chip.setSelected(i == Tones.current(this));
+            chip.setOnClickListener(v -> {
+                Tones.set(this, style);
+                for (int k = 0; k < toneRow.getChildCount(); k++) toneRow.getChildAt(k).setSelected(k == style);
+                toneIndex = 2; // الضغطة التالية على زر السماع تُسمع «قبل الإقامة»
+                playTone(Tones.sound(style, 1));
+            });
+            toneRow.addView(chip);
+        }
 
         // البار السفلي
         Switch sw = findViewById(R.id.switch_dock);

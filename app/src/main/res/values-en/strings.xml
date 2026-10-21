@@ -90,4 +90,11 @@
     <string name="pa_ch_soon">Before adhan</string>
     <string name="pa_ch_adhan">Adhan</string>
     <string name="pa_ch_iqama">Before iqama</string>
+    <string name="set_tone_style">Tone</string>
+    <string name="tone_bell">Soft bell</string>
+    <string name="tone_qanun">Qanun</string>
+    <string name="tone_ney">Ney</string>
+    <string name="tone_crystal">Crystal</string>
+    <string name="tone_wind">Wind chimes</string>
+    <string name="tone_marimba">Marimba</string>
 </resources>

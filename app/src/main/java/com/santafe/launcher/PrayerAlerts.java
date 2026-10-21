@@ -22,9 +22,14 @@ public final class PrayerAlerts extends BroadcastReceiver {
 
     private static final String EXTRA_TYPE = "type", EXTRA_PRAYER = "prayer", EXTRA_AT = "at", EXTRA_ADHAN = "adhan";
     private static final int NOTIF_ID = 77;
-    /** معرّفات القنوات (تتغير اللاحقة إن تغيّرت النغمة، لأن أندرويد لا يسمح بتعديل صوت قناة موجودة) */
-    private static final String[] CHANNELS = {"prayer_soon_v1", "prayer_adhan_v1", "prayer_iqama_v1"};
-    private static final int[] SOUNDS = {R.raw.chime_soon, R.raw.chime_adhan, R.raw.chime_iqama};
+    /** أنواع القنوات. لكل مجموعة نغمات قنوات خاصة، لأن أندرويد لا يسمح بتعديل صوت قناة موجودة */
+    private static final String[] KINDS = {"soon", "adhan", "iqama"};
+    /** قنوات الإصدار ١.٦ وما قبله (تُحذف) */
+    private static final String[] OLD_CHANNELS = {"prayer_soon_v1", "prayer_adhan_v1", "prayer_iqama_v1"};
+
+    static String channel(int style, int type) {
+        return "prayer_" + KINDS[type] + "_" + Tones.STYLES[style] + "_v2";
+    }
 
     static boolean enabled(Context c) {
         return Lang.prefs(c).getBoolean("prayer_alerts", true);
@@ -82,7 +87,8 @@ public final class PrayerAlerts extends BroadcastReceiver {
     private static void show(Context c, int type, int prayer, long adhan) {
         NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm == null) return;
-        ensureChannels(c, nm);
+        int style = Tones.current(c);
+        ensureChannels(c, nm, style);
         String name = c.getString(PrayerActivity.NAMES[prayer]);
         String title, text;
         long iqamaAt = adhan + PrayerTimes.IQAMA[prayer] * 60_000L;
@@ -99,7 +105,7 @@ public final class PrayerAlerts extends BroadcastReceiver {
         PendingIntent open = PendingIntent.getActivity(c, 2, new Intent(c, PrayerActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), PendingIntent.FLAG_IMMUTABLE);
         Notification.Builder b = android.os.Build.VERSION.SDK_INT >= 26
-                ? new Notification.Builder(c, CHANNELS[type]) : new Notification.Builder(c);
+                ? new Notification.Builder(c, channel(style, type)) : new Notification.Builder(c);
         b.setSmallIcon(R.drawable.ic_prayer)
                 .setContentTitle(title)
                 .setContentText(text)
@@ -113,25 +119,31 @@ public final class PrayerAlerts extends BroadcastReceiver {
             long ttl = type == AlertPlan.ADHAN ? Math.max(60_000L, iqamaAt - System.currentTimeMillis()) : 5 * 60_000L;
             b.setTimeoutAfter(ttl);
         } else {
-            b.setPriority(Notification.PRIORITY_HIGH).setSound(sound(c, type));
+            b.setPriority(Notification.PRIORITY_HIGH).setSound(sound(c, style, type));
         }
         try { nm.notify(NOTIF_ID, b.build()); } catch (SecurityException ignored) { } // لم يُسمح بالإشعارات
     }
 
-    private static Uri sound(Context c, int type) {
-        return Uri.parse("android.resource://" + c.getPackageName() + "/" + SOUNDS[type]);
+    private static Uri sound(Context c, int style, int type) {
+        return Uri.parse("android.resource://" + c.getPackageName() + "/" + Tones.sound(style, type));
     }
 
-    private static void ensureChannels(Context c, NotificationManager nm) {
+    /** ينشئ قنوات المجموعة المختارة ويحذف قنوات المجموعات الأخرى، فلا تتكدس في إعدادات الإشعارات */
+    private static void ensureChannels(Context c, NotificationManager nm, int style) {
         if (android.os.Build.VERSION.SDK_INT < 26) return;
+        for (String old : OLD_CHANNELS) nm.deleteNotificationChannel(old);
+        for (int s = 0; s < Tones.STYLES.length; s++)
+            if (s != style) for (int t = 0; t < 3; t++) nm.deleteNotificationChannel(channel(s, t));
         int[] names = {R.string.pa_ch_soon, R.string.pa_ch_adhan, R.string.pa_ch_iqama};
+        String styleName = c.getString(Tones.NAMES[style]);
         AudioAttributes aa = new AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build();
         for (int i = 0; i < 3; i++) {
-            if (nm.getNotificationChannel(CHANNELS[i]) != null) continue;
-            NotificationChannel ch = new NotificationChannel(CHANNELS[i], c.getString(names[i]), NotificationManager.IMPORTANCE_HIGH);
-            ch.setSound(sound(c, i), aa);
+            String id = channel(style, i);
+            if (nm.getNotificationChannel(id) != null) continue;
+            NotificationChannel ch = new NotificationChannel(id, c.getString(names[i]) + " · " + styleName, NotificationManager.IMPORTANCE_HIGH);
+            ch.setSound(sound(c, style, i), aa);
             ch.enableVibration(false);
             nm.createNotificationChannel(ch);
         }
