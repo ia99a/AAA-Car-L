@@ -81,10 +81,16 @@ public final class PrayerAlerts extends BroadcastReceiver {
         boolean fire = enabled(c) && valid && Math.abs(System.currentTimeMillis() - at) < 2 * 60_000L;
         if (fire) show(c, type, prayer, adhan);
         schedule(c);
-        if (fire && Tones.current(c) == Tones.VOICE) {
+        int style = Tones.current(c);
+        if (fire && Tones.speaks(style)) {
             // النطق يحتاج ثوانيَ بعد انتهاء onReceive؛ إن لم يتوفر صوت عربي تُسمع النبضات بدلًا منه
             PendingResult pr = goAsync();
-            Tones.say(c, Tones.spoken(c, type, prayer), () -> Tones.play(c, Tones.beep(type)), pr::finish);
+            Runnable speak = () -> Tones.say(c, Tones.spoken(c, type, prayer),
+                    style == Tones.VOICE ? () -> Tones.play(c, Tones.sound(style, type)) : null, pr::finish);
+            if (style == Tones.BEEP_VOICE) {
+                Tones.play(c, Tones.sound(style, 0)); // نبضتان ثم الصوت
+                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(speak, 1300);
+            } else speak.run();
         }
     }
 
@@ -124,13 +130,13 @@ public final class PrayerAlerts extends BroadcastReceiver {
             b.setTimeoutAfter(ttl);
         } else {
             b.setPriority(Notification.PRIORITY_HIGH);
-            if (style == Tones.BEEP) b.setSound(sound(c, type));
+            if (Tones.isTone(style)) b.setSound(sound(c, style, type));
         }
         try { nm.notify(NOTIF_ID, b.build()); } catch (SecurityException ignored) { } // لم يُسمح بالإشعارات
     }
 
-    private static Uri sound(Context c, int type) {
-        return Uri.parse("android.resource://" + c.getPackageName() + "/" + Tones.beep(type));
+    private static Uri sound(Context c, int style, int type) {
+        return Uri.parse("android.resource://" + c.getPackageName() + "/" + Tones.sound(style, type));
     }
 
     /** ينشئ قنوات المجموعة المختارة ويحذف قنوات المجموعات الأخرى، فلا تتكدس في إعدادات الإشعارات */
@@ -150,7 +156,7 @@ public final class PrayerAlerts extends BroadcastReceiver {
             String id = channel(style, i);
             if (nm.getNotificationChannel(id) != null) continue;
             NotificationChannel ch = new NotificationChannel(id, c.getString(names[i]) + " · " + styleName, NotificationManager.IMPORTANCE_HIGH);
-            ch.setSound(style == Tones.BEEP ? sound(c, i) : null, aa); // الصوت والصامت: القناة بلا نغمة
+            ch.setSound(Tones.isTone(style) ? sound(c, style, i) : null, aa); // الصوت والصامت: القناة بلا نغمة
             ch.enableVibration(false);
             nm.createNotificationChannel(ch);
         }

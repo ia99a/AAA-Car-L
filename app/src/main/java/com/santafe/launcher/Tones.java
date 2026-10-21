@@ -11,22 +11,36 @@ import java.util.Locale;
 
 /**
  * طريقة تنبيه الصلاة، بلا موسيقى:
- *  voice  : صوت يقرأ التنبيه («حان الآن موعد أذان الظهر») بمحرّك النطق في الجهاز
- *  beep   : نبضات تنبيه بسيطة بنفس الدرجة، بلا لحن
- *  silent : إشعار مكتوب فقط
+ *  voice      : صوت يقرأ التنبيه («حان الآن موعد أذان الظهر») بمحرّك النطق في الجهاز
+ *  beep_voice : نبضات ثم الصوت
+ *  pulse, tick, long, sonar, clear, soft : تنبيهات بدرجة صوت واحدة ثابتة، بلا لحن (tools/tones.py)
+ *  silent     : إشعار مكتوب فقط
  */
 final class Tones {
     private Tones() { }
 
-    static final int VOICE = 0, BEEP = 1, SILENT = 2;
-    static final String[] STYLES = {"voice", "beep", "silent"};
-    static final int[] NAMES = {R.string.tone_voice, R.string.tone_beep, R.string.tone_silent};
+    static final int VOICE = 0, BEEP_VOICE = 1, SILENT = 8;
+    static final String[] STYLES = {"voice", "beep_voice", "pulse", "tick", "long", "sonar", "clear", "soft", "silent"};
+    static final int[] NAMES = {R.string.tone_voice, R.string.tone_beep_voice, R.string.tone_pulse, R.string.tone_tick,
+            R.string.tone_long, R.string.tone_sonar, R.string.tone_clear, R.string.tone_soft, R.string.tone_silent};
 
-    private static final int[] BEEPS = {R.raw.tone_beep_soon, R.raw.tone_beep_adhan, R.raw.tone_beep_iqama};
+    /** نغمات الأنماط (للأنماط الصوتية والصامت: نبضات بديلة) */
+    private static final int[][] SOUNDS = {
+            {R.raw.tone_pulse_soon, R.raw.tone_pulse_adhan, R.raw.tone_pulse_iqama},
+            {R.raw.tone_pulse_soon, R.raw.tone_pulse_adhan, R.raw.tone_pulse_iqama},
+            {R.raw.tone_pulse_soon, R.raw.tone_pulse_adhan, R.raw.tone_pulse_iqama},
+            {R.raw.tone_tick_soon, R.raw.tone_tick_adhan, R.raw.tone_tick_iqama},
+            {R.raw.tone_long_soon, R.raw.tone_long_adhan, R.raw.tone_long_iqama},
+            {R.raw.tone_sonar_soon, R.raw.tone_sonar_adhan, R.raw.tone_sonar_iqama},
+            {R.raw.tone_clear_soon, R.raw.tone_clear_adhan, R.raw.tone_clear_iqama},
+            {R.raw.tone_soft_soon, R.raw.tone_soft_adhan, R.raw.tone_soft_iqama},
+            {R.raw.tone_pulse_soon, R.raw.tone_pulse_adhan, R.raw.tone_pulse_iqama},
+    };
 
     /** الطريقة المختارة؛ الافتراضي الصوت، وأي قيمة قديمة (نغمات الإصدار ١.٧) تعود للافتراضي */
     static int current(Context c) {
         String s = Lang.prefs(c).getString("tone_style", "voice");
+        if ("beep".equals(s)) s = "pulse"; // اسم الإصدار ١.٨
         for (int i = 0; i < STYLES.length; i++) if (STYLES[i].equals(s)) return i;
         return VOICE;
     }
@@ -36,9 +50,18 @@ final class Tones {
         Lang.prefs(c).edit().putString("tone_style", STYLES[style]).apply();
     }
 
+    /** هل النمط نغمة فقط (تُعطى لقناة الإشعار)؟ */
+    static boolean isTone(int style) {
+        return style != VOICE && style != BEEP_VOICE && style != SILENT;
+    }
+
+    static boolean speaks(int style) {
+        return style == VOICE || style == BEEP_VOICE;
+    }
+
     /** type: 0 قبل الأذان، 1 الأذان، 2 قبل الإقامة */
-    static int beep(int type) {
-        return BEEPS[type];
+    static int sound(int style, int type) {
+        return SOUNDS[style][type];
     }
 
     /** نص التنبيه المنطوق */

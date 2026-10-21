@@ -92,11 +92,17 @@
     <string name="pa_ch_iqama">Before iqama</string>
     <string name="set_tone_style">Alert sound</string>
     <string name="tone_voice">Spoken alert</string>
-    <string name="tone_beep">Simple beep</string>
     <string name="tone_silent">Silent</string>
     <string name="tone_silent_desc">Written notification only, no sound</string>
     <string name="tone_voice_missing">No voice for this language on this screen, so the simple beep is used. Install Speech Services by Google to add one</string>
     <string name="say_soon">Ten minutes until the %1$s adhan</string>
     <string name="say_adhan">It is now time for the %1$s adhan</string>
     <string name="say_iqama">Five minutes until the %1$s iqama</string>
+    <string name="tone_beep_voice">Beep, then voice</string>
+    <string name="tone_pulse">Pulses</string>
+    <string name="tone_tick">Soft ticks</string>
+    <string name="tone_long">Long tone</string>
+    <string name="tone_sonar">Sonar</string>
+    <string name="tone_clear">Sharp, for the road</string>
+    <string name="tone_soft">Low whisper</string>
 </resources>

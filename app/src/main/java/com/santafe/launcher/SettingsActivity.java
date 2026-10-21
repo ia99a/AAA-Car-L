@@ -40,13 +40,17 @@ public class SettingsActivity extends Activity {
 
     /** يُسمع التنبيه كما سيُسمع فعلًا (مثال بصلاة الظهر) */
     private void preview(int style, int type) {
-        if (style == Tones.BEEP) { playTone(Tones.beep(type)); return; }
+        if (Tones.isTone(style)) { playTone(Tones.sound(style, type)); return; }
         if (style == Tones.SILENT) { Toast.makeText(this, R.string.tone_silent_desc, Toast.LENGTH_SHORT).show(); return; }
-        Tones.say(this, Tones.spoken(this, type, 2), () -> {
+        Runnable speak = () -> Tones.say(this, Tones.spoken(this, type, 2), () -> {
             if (isFinishing()) return;
             Toast.makeText(this, R.string.tone_voice_missing, Toast.LENGTH_LONG).show();
-            playTone(Tones.beep(type));
+            if (style == Tones.VOICE) playTone(Tones.sound(style, type));
         }, null);
+        if (style == Tones.BEEP_VOICE) {
+            playTone(Tones.sound(style, 0));
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { if (!isFinishing()) speak.run(); }, 1300);
+        } else speak.run();
     }
 
     @Override

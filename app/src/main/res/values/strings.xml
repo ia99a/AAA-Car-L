@@ -96,11 +96,17 @@
     <string name="pa_ch_iqama">قبل الإقامة</string>
     <string name="set_tone_style">صوت التنبيه</string>
     <string name="tone_voice">صوت يقرأ التنبيه</string>
-    <string name="tone_beep">تنبيه بسيط</string>
     <string name="tone_silent">بلا صوت</string>
     <string name="tone_silent_desc">إشعار مكتوب فقط بلا صوت</string>
     <string name="tone_voice_missing">لا يوجد صوت عربي للنطق في هذه الشاشة، فيُستخدم التنبيه البسيط. يمكن تثبيت «خدمات النطق من Google» وإضافة العربية</string>
     <string name="say_soon">بقي عشر دقائق على أذان %1$s</string>
     <string name="say_adhan">حان الآن موعد أذان %1$s</string>
     <string name="say_iqama">بقي خمس دقائق على إقامة صلاة %1$s</string>
+    <string name="tone_beep_voice">نبضات ثم صوت</string>
+    <string name="tone_pulse">نبضات</string>
+    <string name="tone_tick">نقرات خفيفة</string>
+    <string name="tone_long">نبرة طويلة</string>
+    <string name="tone_sonar">سونار</string>
+    <string name="tone_clear">حاد للطريق</string>
+    <string name="tone_soft">همس منخفض</string>
 </resources>
