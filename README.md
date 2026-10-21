@@ -50,7 +50,7 @@ https://github.com/ia99a/AAA-Car-L/raw/main/release/AAA-Car-L.apk
 
 1. **السكربت `build_apk.sh`** (بدون Gradle): بنفس الأدوات المذكورة في أعلاه، `TOOLS=/path/to/tools ./build_apk.sh`.
 2. **Android Studio:** افتح المجلد، ثم Build › Build APK(s).
-3. **GitHub:** ارفع المجلد إلى مستودع، فيُبنى الملف تلقائيًا في تبويب Actions.
+3. **GitHub:** بعد البناء، ضع الملف الجديد مكان `release/AAA-Car-L.apk` وارفع التغيير، فيُنشر إصدار جديد على نفس رابط التحميل تلقائيًا.
 
 ## الأمان
 
