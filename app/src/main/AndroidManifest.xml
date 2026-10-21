@@ -18,6 +18,10 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
+        <!-- محرّك النطق في الجهاز، لقراءة تنبيهات الصلاة بصوت (أندرويد ١١+ يحتاج هذا التصريح) -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
     </queries>
 
     <!-- الأمان:

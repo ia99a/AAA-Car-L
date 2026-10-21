@@ -83,8 +83,8 @@
     <string name="video_open_brave">افتح في Brave</string>
     <string name="video_driving">الصورة مخفية أثناء القيادة\nالصوت مستمر</string>
     <string name="set_prayer_alerts">تنبيهات الصلاة</string>
-    <string name="set_prayer_alerts_desc">نغمة قبل الأذان وعنده وقبل الإقامة</string>
-    <string name="set_preview_tone">اسمع النغمة</string>
+    <string name="set_prayer_alerts_desc">تنبيه قبل الأذان وعنده وقبل الإقامة</string>
+    <string name="set_preview_tone">اسمع التنبيه</string>
     <string name="pa_soon_title">اقترب الأذان</string>
     <string name="pa_soon_text">%1$s بعد ١٠ دقائق</string>
     <string name="pa_adhan_title">حان وقت صلاة %1$s</string>
@@ -94,11 +94,13 @@
     <string name="pa_ch_soon">قبل الأذان</string>
     <string name="pa_ch_adhan">الأذان</string>
     <string name="pa_ch_iqama">قبل الإقامة</string>
-    <string name="set_tone_style">النغمة</string>
-    <string name="tone_bell">جرس ناعم</string>
-    <string name="tone_qanun">قانون</string>
-    <string name="tone_ney">ناي</string>
-    <string name="tone_crystal">كريستال</string>
-    <string name="tone_wind">أجراس ريح</string>
-    <string name="tone_marimba">ماريمبا</string>
+    <string name="set_tone_style">صوت التنبيه</string>
+    <string name="tone_voice">صوت يقرأ التنبيه</string>
+    <string name="tone_beep">تنبيه بسيط</string>
+    <string name="tone_silent">بلا صوت</string>
+    <string name="tone_silent_desc">إشعار مكتوب فقط بلا صوت</string>
+    <string name="tone_voice_missing">لا يوجد صوت عربي للنطق في هذه الشاشة، فيُستخدم التنبيه البسيط. يمكن تثبيت «خدمات النطق من Google» وإضافة العربية</string>
+    <string name="say_soon">بقي عشر دقائق على أذان %1$s</string>
+    <string name="say_adhan">حان الآن موعد أذان %1$s</string>
+    <string name="say_iqama">بقي خمس دقائق على إقامة صلاة %1$s</string>
 </resources>

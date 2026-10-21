@@ -79,8 +79,8 @@
     <string name="video_open_brave">Open in Brave</string>
     <string name="video_driving">Picture hidden while driving\nSound keeps playing</string>
     <string name="set_prayer_alerts">Prayer alerts</string>
-    <string name="set_prayer_alerts_desc">A chime before adhan, at adhan, and before iqama</string>
-    <string name="set_preview_tone">Hear the chime</string>
+    <string name="set_prayer_alerts_desc">An alert before adhan, at adhan, and before iqama</string>
+    <string name="set_preview_tone">Hear the alert</string>
     <string name="pa_soon_title">Adhan soon</string>
     <string name="pa_soon_text">%1$s in 10 minutes</string>
     <string name="pa_adhan_title">Time for %1$s</string>
@@ -90,11 +90,13 @@
     <string name="pa_ch_soon">Before adhan</string>
     <string name="pa_ch_adhan">Adhan</string>
     <string name="pa_ch_iqama">Before iqama</string>
-    <string name="set_tone_style">Tone</string>
-    <string name="tone_bell">Soft bell</string>
-    <string name="tone_qanun">Qanun</string>
-    <string name="tone_ney">Ney</string>
-    <string name="tone_crystal">Crystal</string>
-    <string name="tone_wind">Wind chimes</string>
-    <string name="tone_marimba">Marimba</string>
+    <string name="set_tone_style">Alert sound</string>
+    <string name="tone_voice">Spoken alert</string>
+    <string name="tone_beep">Simple beep</string>
+    <string name="tone_silent">Silent</string>
+    <string name="tone_silent_desc">Written notification only, no sound</string>
+    <string name="tone_voice_missing">No voice for this language on this screen, so the simple beep is used. Install Speech Services by Google to add one</string>
+    <string name="say_soon">Ten minutes until the %1$s adhan</string>
+    <string name="say_adhan">It is now time for the %1$s adhan</string>
+    <string name="say_iqama">Five minutes until the %1$s iqama</string>
 </resources>

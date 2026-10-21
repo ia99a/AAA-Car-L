@@ -25,7 +25,7 @@ import java.util.List;
 public class SettingsActivity extends Activity {
 
     private final List<String> chosen = new ArrayList<>();
-    private int toneIndex = 1; // زر السماع: أول ضغطة تُسمعك نغمة الأذان ثم يتنقل بين الثلاث
+    private int toneIndex = 1; // زر السماع: أول ضغطة تُسمعك تنبيه الأذان ثم يتنقل بين الثلاث
     private android.media.MediaPlayer player;
 
     /** يُسمع النغمة كما ستُسمع في الإشعار */
@@ -36,6 +36,17 @@ public class SettingsActivity extends Activity {
         player = mp;
         mp.setOnCompletionListener(done -> { done.release(); if (player == done) player = null; });
         mp.start();
+    }
+
+    /** يُسمع التنبيه كما سيُسمع فعلًا (مثال بصلاة الظهر) */
+    private void preview(int style, int type) {
+        if (style == Tones.BEEP) { playTone(Tones.beep(type)); return; }
+        if (style == Tones.SILENT) { Toast.makeText(this, R.string.tone_silent_desc, Toast.LENGTH_SHORT).show(); return; }
+        Tones.say(this, Tones.spoken(this, type, 2), () -> {
+            if (isFinishing()) return;
+            Toast.makeText(this, R.string.tone_voice_missing, Toast.LENGTH_LONG).show();
+            playTone(Tones.beep(type));
+        }, null);
     }
 
     @Override
@@ -83,8 +94,7 @@ public class SettingsActivity extends Activity {
             PrayerAlerts.setEnabled(this, on);
             swP.setChecked(on);
         });
-        findViewById(R.id.btn_preview_tone).setOnClickListener(v ->
-                playTone(Tones.sound(Tones.current(this), toneIndex++ % 3)));
+        findViewById(R.id.btn_preview_tone).setOnClickListener(v -> preview(Tones.current(this), toneIndex++ % 3));
 
         // مجموعة النغمات: الضغط يختار المجموعة ويُسمع نغمة الأذان منها
         android.widget.LinearLayout toneRow = findViewById(R.id.tone_chips);
@@ -109,7 +119,7 @@ public class SettingsActivity extends Activity {
                 Tones.set(this, style);
                 for (int k = 0; k < toneRow.getChildCount(); k++) toneRow.getChildAt(k).setSelected(k == style);
                 toneIndex = 2; // الضغطة التالية على زر السماع تُسمع «قبل الإقامة»
-                playTone(Tones.sound(style, 1));
+                preview(style, 1);
             });
             toneRow.addView(chip);
         }

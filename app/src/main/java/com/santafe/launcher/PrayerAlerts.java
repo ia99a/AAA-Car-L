@@ -24,11 +24,9 @@ public final class PrayerAlerts extends BroadcastReceiver {
     private static final int NOTIF_ID = 77;
     /** أنواع القنوات. لكل مجموعة نغمات قنوات خاصة، لأن أندرويد لا يسمح بتعديل صوت قناة موجودة */
     private static final String[] KINDS = {"soon", "adhan", "iqama"};
-    /** قنوات الإصدار ١.٦ وما قبله (تُحذف) */
-    private static final String[] OLD_CHANNELS = {"prayer_soon_v1", "prayer_adhan_v1", "prayer_iqama_v1"};
 
     static String channel(int style, int type) {
-        return "prayer_" + KINDS[type] + "_" + Tones.STYLES[style] + "_v2";
+        return "prayer_" + KINDS[type] + "_" + Tones.STYLES[style] + "_v3";
     }
 
     static boolean enabled(Context c) {
@@ -80,8 +78,14 @@ public final class PrayerAlerts extends BroadcastReceiver {
         long at = intent.getLongExtra(EXTRA_AT, 0), adhan = intent.getLongExtra(EXTRA_ADHAN, 0);
         boolean valid = type >= 0 && type <= 2 && prayer >= 0 && prayer < 6;
         // تنبيه متأخر أكثر من دقيقتين (مثلًا الشاشة كانت مطفأة) لا يُعرض حتى لا يربك
-        if (enabled(c) && valid && Math.abs(System.currentTimeMillis() - at) < 2 * 60_000L) show(c, type, prayer, adhan);
+        boolean fire = enabled(c) && valid && Math.abs(System.currentTimeMillis() - at) < 2 * 60_000L;
+        if (fire) show(c, type, prayer, adhan);
         schedule(c);
+        if (fire && Tones.current(c) == Tones.VOICE) {
+            // النطق يحتاج ثوانيَ بعد انتهاء onReceive؛ إن لم يتوفر صوت عربي تُسمع النبضات بدلًا منه
+            PendingResult pr = goAsync();
+            Tones.say(c, Tones.spoken(c, type, prayer), () -> Tones.play(c, Tones.beep(type)), pr::finish);
+        }
     }
 
     private static void show(Context c, int type, int prayer, long adhan) {
@@ -119,21 +123,24 @@ public final class PrayerAlerts extends BroadcastReceiver {
             long ttl = type == AlertPlan.ADHAN ? Math.max(60_000L, iqamaAt - System.currentTimeMillis()) : 5 * 60_000L;
             b.setTimeoutAfter(ttl);
         } else {
-            b.setPriority(Notification.PRIORITY_HIGH).setSound(sound(c, style, type));
+            b.setPriority(Notification.PRIORITY_HIGH);
+            if (style == Tones.BEEP) b.setSound(sound(c, type));
         }
         try { nm.notify(NOTIF_ID, b.build()); } catch (SecurityException ignored) { } // لم يُسمح بالإشعارات
     }
 
-    private static Uri sound(Context c, int style, int type) {
-        return Uri.parse("android.resource://" + c.getPackageName() + "/" + Tones.sound(style, type));
+    private static Uri sound(Context c, int type) {
+        return Uri.parse("android.resource://" + c.getPackageName() + "/" + Tones.beep(type));
     }
 
     /** ينشئ قنوات المجموعة المختارة ويحذف قنوات المجموعات الأخرى، فلا تتكدس في إعدادات الإشعارات */
     private static void ensureChannels(Context c, NotificationManager nm, int style) {
         if (android.os.Build.VERSION.SDK_INT < 26) return;
-        for (String old : OLD_CHANNELS) nm.deleteNotificationChannel(old);
-        for (int s = 0; s < Tones.STYLES.length; s++)
-            if (s != style) for (int t = 0; t < 3; t++) nm.deleteNotificationChannel(channel(s, t));
+        // يحذف قنوات الطرق الأخرى والإصدارات السابقة
+        java.util.Set<String> keep = new java.util.HashSet<>();
+        for (int t = 0; t < 3; t++) keep.add(channel(style, t));
+        for (NotificationChannel old : nm.getNotificationChannels())
+            if (old.getId().startsWith("prayer_") && !keep.contains(old.getId())) nm.deleteNotificationChannel(old.getId());
         int[] names = {R.string.pa_ch_soon, R.string.pa_ch_adhan, R.string.pa_ch_iqama};
         String styleName = c.getString(Tones.NAMES[style]);
         AudioAttributes aa = new AudioAttributes.Builder()
@@ -143,7 +150,7 @@ public final class PrayerAlerts extends BroadcastReceiver {
             String id = channel(style, i);
             if (nm.getNotificationChannel(id) != null) continue;
             NotificationChannel ch = new NotificationChannel(id, c.getString(names[i]) + " · " + styleName, NotificationManager.IMPORTANCE_HIGH);
-            ch.setSound(sound(c, style, i), aa);
+            ch.setSound(style == Tones.BEEP ? sound(c, i) : null, aa); // الصوت والصامت: القناة بلا نغمة
             ch.enableVibration(false);
             nm.createNotificationChannel(ch);
         }
