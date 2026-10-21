@@ -1,0 +1,21 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.santafe.launcher'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.santafe.launcher'
+        minSdk 24          // أندرويد ٧ فما فوق، يغطي شاشات السيارات الشائعة
+        targetSdk 34
+        versionCode 5
+        versionName '1.4'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}

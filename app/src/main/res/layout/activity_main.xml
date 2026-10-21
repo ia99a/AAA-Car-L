@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  الشاشة الرئيسية لشاشة سنتافي العريضة (حوالي ١٩٢٠×٧٢٠، نسبة ٨:٣):
+  خريطة داكنة متحركة تملأ الخلفية، وشريط السائق ثابت في يسار الشاشة بأي لغة (أقرب للسائق)،
+  ثم المحتوى: بطاقة الوقت، مربع Brave يسار الشاشة، بطاقتا الخرائط، وبار أيقونات صغير يُخفى من الإعدادات. اتجاه المحتوى يتبع اللغة.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:clipChildren="false">
+
+    <com.santafe.launcher.MapBackdropView
+        android:id="@+id/backdrop"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/scrim_bottom" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:layoutDirection="ltr"
+        android:orientation="horizontal"
+        android:paddingLeft="12dp"
+        android:paddingTop="12dp"
+        android:paddingRight="20dp"
+        android:paddingBottom="12dp">
+
+    <!-- شريط السائق: يسار الشاشة دائمًا -->
+    <LinearLayout
+        android:id="@+id/rail"
+        android:layout_width="52dp"
+        android:layout_height="match_parent"
+        android:background="@drawable/rail_bg"
+        android:orientation="vertical"
+        android:padding="3dp">
+
+        <LinearLayout
+            android:id="@+id/rail_items"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical" />
+
+        <View
+            android:layout_width="22dp"
+            android:layout_height="1dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="2dp"
+            android:background="@color/line" />
+
+        <include
+            android:id="@+id/rail_edit"
+            layout="@layout/item_rail" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/content"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="16dp"
+        android:layout_weight="1"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:layoutDirection="locale"
+        android:orientation="vertical"
+        android:paddingTop="2dp">
+
+        <!-- الصف العلوي -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/top_card"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/blue_card_bg"
+                android:elevation="4dp"
+                android:gravity="center_vertical"
+                android:minWidth="200dp"
+                android:orientation="horizontal"
+                android:paddingStart="14dp"
+                android:paddingTop="7dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="7dp">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_nav" />
+
+                <TextClock
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:format12Hour="h:mm a"
+                    android:format24Hour="HH:mm"
+                    android:includeFontPadding="false"
+                    android:textColor="@color/ink"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <TextClock
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:alpha="0.8"
+                    android:format12Hour="@string/date_format"
+                    android:format24Hour="@string/date_format"
+                    android:textColor="@color/ink"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+
+        </LinearLayout>
+
+        <!-- المنتصف: الخريطة ظاهرة -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- الصف السفلي: مربع Brave يسار الشاشة (جهة السائق) دائمًا، وبطاقتا الخرائط في الجهة الأخرى -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:gravity="bottom"
+            android:layoutDirection="ltr"
+            android:orientation="horizontal">
+
+            <include
+                android:id="@+id/card_brave"
+                layout="@layout/card_brave"
+                android:layout_width="220dp"
+                android:layout_height="wrap_content" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layoutDirection="locale"
+                android:orientation="horizontal">
+
+                <include
+                    android:id="@+id/card_maps"
+                    layout="@layout/card_nav"
+                    android:layout_width="270dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:layout_marginEnd="10dp" />
+
+                <include
+                    android:id="@+id/card_hudhud"
+                    layout="@layout/card_nav"
+                    android:layout_width="270dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- البار السفلي: صغير ومميز بإطار برتقالي خفيف، ويُخفى من الإعدادات -->
+        <LinearLayout
+            android:id="@+id/dock"
+            android:layout_width="wrap_content"
+            android:layout_height="42dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/dock_bg"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp" />
+    </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

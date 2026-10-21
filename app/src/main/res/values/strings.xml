@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AAA Car L</string>
+    <string name="maps">خرائط قوقل</string>
+    <string name="hudhud">هدهد</string>
+    <string name="not_installed">غير مثبّت · اضغط للتثبيت من المتجر</string>
+    <string name="opening_store">فتح المتجر…</string>
+    <string name="no_store">لا يوجد متجر تطبيقات على هذه الشاشة</string>
+    <string name="back_home">الرئيسية</string>
+    <string name="dock_add">أضف تطبيقًا</string>
+    <string name="dock_pick_title">اختر تطبيقًا للبار</string>
+    <string name="dock_clear">إفراغ الخانة</string>
+    <string name="adblock_on">الإعلانات محجوبة ✓</string>
+    <string name="adblock_steps">نُسخ العنوان: family.adguard-dns.com\nافتح: الشبكة والإنترنت ← DNS خاص ← اسم مضيف، والصقه ثم احفظ</string>
+    <string name="start_nav">ابدأ الملاحة ←</string>
+    <string name="maps_sub">الملاحة والمرور المباشر</string>
+    <string name="hudhud_sub">خرائط سعودية دقيقة</string>
+    <string name="home">الرئيسية</string>
+    <string name="date_format">EEEE، d MMMM</string>
+
+    <!-- شريط السائق -->
+    <string name="tool_location">موقعي</string>
+    <string name="tool_prayer">الصلاة</string>
+    <string name="tool_apps">التطبيقات</string>
+
+    <!-- اختيار الخريطة -->
+    <string name="location_title">افتح موقعي في</string>
+    <string name="cancel">إلغاء</string>
+
+    <!-- تعديل الأدوات -->
+    <string name="tools_hint">اضغط على أداة لإضافتها أو إزالتها. </string>
+    <string name="tools_done">تم</string>
+    <string name="tools_max">وصلت للحد الأقصى: ست أدوات</string>
+    <string name="tools_min">اترك أداة واحدة على الأقل</string>
+    <string name="tool_location_desc">يفتح موقعك في خرائط قوقل أو هدهد</string>
+    <string name="tool_prayer_desc">الصلاة القادمة، واضغط لكل الأوقات</string>
+    <string name="tool_apps_desc">قائمة كل التطبيقات</string>
+
+    <!-- الصلاة -->
+    <string name="prayer_title">أوقات الصلاة</string>
+    <string name="prayer_next">القادمة</string>
+    <string name="prayer_iqama">الإقامة %1$s</string>
+    <string name="prayer_in">بعد %1$s</string>
+    <string name="prayer_method">طريقة أم القرى · بدون إنترنت</string>
+    <string name="fajr">الفجر</string>
+    <string name="sunrise">الشروق</string>
+    <string name="dhuhr">الظهر</string>
+    <string name="asr">العصر</string>
+    <string name="maghrib">المغرب</string>
+    <string name="isha">العشاء</string>
+    <string name="city_riyadh">الرياض</string>
+    <string name="city_qassim">القصيم</string>
+    <string name="city_hail">حائل</string>
+    <string name="city_jeddah">جدة</string>
+    <string name="city_makkah">مكة</string>
+    <string name="city_madinah">المدينة</string>
+    <string name="city_taif">الطائف</string>
+    <string name="city_dammam">الدمام</string>
+    <string name="city_ahsa">الأحساء</string>
+    <string name="city_abha">أبها</string>
+    <string name="city_jazan">جازان</string>
+    <string name="city_tabuk">تبوك</string>
+    <string name="tool_brave">Brave</string>
+    <string name="tool_brave_desc">فيديو بلا إعلانات في نافذة صغيرة</string>
+    <string name="brave_sub">فيديو بلا إعلانات</string>
+    <string name="brave_small">تصغير</string>
+    <string name="brave_large">تكبير</string>
+    <string name="brave_not_installed">غير مثبّت · اضغط للتثبيت</string>
+    <string name="brave_freeform_tip">إن فتح بملء الشاشة: شاشتك لا تدعم النوافذ العائمة، أو فعّلها من خيارات المطوّر</string>
+    <string name="settings_title">الإعدادات</string>
+    <string name="set_general">عام</string>
+    <string name="set_language">لغة الواجهة</string>
+    <string name="set_dock">البار السفلي</string>
+    <string name="set_dock_desc">إظهار بار التطبيقات أسفل الشاشة</string>
+    <string name="set_system">إعدادات أندرويد</string>
+    <string name="set_system_desc">الشبكة، الصوت، الشاشة</string>
+    <string name="set_adblock">حجب الإعلانات</string>
+    <string name="set_adblock_off">غير مفعّل · اضغط للتفعيل لكل التطبيقات</string>
+    <string name="set_adblock_on">مفعّل لكل التطبيقات</string>
+    <string name="adblock_old_android">حجب الإعلانات يحتاج أندرويد ٩ فما فوق، وهذه الشاشة أقدم</string>
+    <string name="road_fahd">طريق الملك فهد</string>
+    <string name="road_olaya">شارع العليا</string>
+    <string name="road_takhassusi">طريق التخصصي</string>
+</resources>

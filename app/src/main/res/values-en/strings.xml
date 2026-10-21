@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AAA Car L</string>
+    <string name="maps">Google Maps</string>
+    <string name="hudhud">Hudhud</string>
+    <string name="not_installed">Not installed · Tap to get it</string>
+    <string name="opening_store">Opening the store…</string>
+    <string name="no_store">No app store on this screen</string>
+    <string name="back_home">Home</string>
+    <string name="dock_add">Add an app</string>
+    <string name="dock_pick_title">Choose an app for the bar</string>
+    <string name="dock_clear">Empty this slot</string>
+    <string name="adblock_on">Ads are blocked ✓</string>
+    <string name="adblock_steps">Copied: family.adguard-dns.com\nOpen Network &amp; internet → Private DNS → Hostname, paste it and save</string>
+    <string name="start_nav">Start navigation →</string>
+    <string name="maps_sub">Navigation and live traffic</string>
+    <string name="hudhud_sub">Accurate Saudi maps</string>
+    <string name="home">Home</string>
+    <string name="date_format">EEEE, d MMMM</string>
+
+    <string name="tool_location">Location</string>
+    <string name="tool_prayer">Prayer</string>
+    <string name="tool_apps">Apps</string>
+
+    <string name="location_title">Open my location in</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="tools_hint">Tap a tool to add or remove it.</string>
+    <string name="tools_done">Done</string>
+    <string name="tools_max">The bar is full: six tools at most</string>
+    <string name="tools_min">Keep at least one tool</string>
+    <string name="tool_location_desc">Opens your location in Google Maps or Hudhud</string>
+    <string name="tool_prayer_desc">Next prayer; tap for all times</string>
+    <string name="tool_apps_desc">List of all apps</string>
+
+    <string name="prayer_title">Prayer times</string>
+    <string name="prayer_next">Next</string>
+    <string name="prayer_iqama">Iqama %1$s</string>
+    <string name="prayer_in">in %1$s</string>
+    <string name="prayer_method">Umm al-Qura method · works offline</string>
+    <string name="fajr">Fajr</string>
+    <string name="sunrise">Sunrise</string>
+    <string name="dhuhr">Dhuhr</string>
+    <string name="asr">Asr</string>
+    <string name="maghrib">Maghrib</string>
+    <string name="isha">Isha</string>
+    <string name="city_riyadh">Riyadh</string>
+    <string name="city_qassim">Qassim</string>
+    <string name="city_hail">Hail</string>
+    <string name="city_jeddah">Jeddah</string>
+    <string name="city_makkah">Makkah</string>
+    <string name="city_madinah">Madinah</string>
+    <string name="city_taif">Taif</string>
+    <string name="city_dammam">Dammam</string>
+    <string name="city_ahsa">Al-Ahsa</string>
+    <string name="city_abha">Abha</string>
+    <string name="city_jazan">Jazan</string>
+    <string name="city_tabuk">Tabuk</string>
+    <string name="tool_brave">Brave</string>
+    <string name="tool_brave_desc">Ad-free video in a small window</string>
+    <string name="brave_sub">Ad-free video</string>
+    <string name="brave_small">Small</string>
+    <string name="brave_large">Full</string>
+    <string name="brave_not_installed">Not installed · Tap to get it</string>
+    <string name="brave_freeform_tip">Opened full screen? Your screen may not support floating windows, or turn them on in Developer options</string>
+    <string name="settings_title">Settings</string>
+    <string name="set_general">General</string>
+    <string name="set_language">Language</string>
+    <string name="set_dock">Bottom bar</string>
+    <string name="set_dock_desc">Show the app bar at the bottom</string>
+    <string name="set_system">Android settings</string>
+    <string name="set_system_desc">Network, sound, display</string>
+    <string name="set_adblock">Ad blocking</string>
+    <string name="set_adblock_off">Off · Tap to turn on for all apps</string>
+    <string name="set_adblock_on">On for all apps</string>
+    <string name="adblock_old_android">Ad blocking needs Android 9 or newer; this screen is older</string>
+    <string name="road_fahd">King Fahd Rd</string>
+    <string name="road_olaya">Olaya St</string>
+    <string name="road_takhassusi">Takhassusi Rd</string>
+</resources>

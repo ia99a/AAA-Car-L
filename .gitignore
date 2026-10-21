@@ -1,0 +1,9 @@
+build-out/
+keystore/
+*.jks
+*.keystore
+keystore.properties
+*.idsig
+local.properties
+.gradle/
+build/

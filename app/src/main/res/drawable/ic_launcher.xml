@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- أيقونة المشغّل: مربع داكن بنصفين، كهيئة الشاشة الرئيسية -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path android:fillColor="#0B0F14" android:pathData="M10,2h28a8,8 0,0 1,8 8v28a8,8 0,0 1,-8 8h-28a8,8 0,0 1,-8 -8v-28a8,8 0,0 1,8 -8z" />
+    <path android:fillColor="#F0B552" android:pathData="M9,12h13v24h-13z" />
+    <path android:fillColor="#F1EAD9" android:pathData="M26,12h13v24h-13z" />
+</vector>

@@ -1,0 +1,37 @@
+# ينشر ملف release/AAA-Car-L.apk كإصدار على صفحة Releases كلما تغيّر،
+# فيبقى رابط التحميل المباشر ثابتًا:
+#   https://github.com/ia99a/AAA-Car-L/releases/latest/download/AAA-Car-L.apk
+# الملف موقّع مسبقًا؛ مفتاح التوقيع لا يُرفع إلى GitHub أبدًا.
+name: Publish APK
+on:
+  push:
+    branches: [main]
+    paths: [release/AAA-Car-L.apk]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Read version
+        id: v
+        run: |
+          V=$(grep -oP "versionName '\K[^']+" app/build.gradle)
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "sha=$(sha256sum release/AAA-Car-L.apk | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          V: ${{ steps.v.outputs.version }}
+          SHA: ${{ steps.v.outputs.sha }}
+        run: |
+          NOTES="AAA Car L ${V}
+
+          SHA-256: ${SHA}"
+          if gh release view "v${V}" >/dev/null 2>&1; then
+            gh release upload "v${V}" release/AAA-Car-L.apk --clobber
+          else
+            gh release create "v${V}" release/AAA-Car-L.apk --title "AAA Car L ${V}" --notes "$NOTES" --latest
+          fi
