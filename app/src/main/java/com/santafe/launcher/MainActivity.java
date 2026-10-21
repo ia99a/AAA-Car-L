@@ -119,10 +119,18 @@ public class MainActivity extends Activity {
                     speedView.setText(Lang.speed(this, kmh));
                     video.setMoving(moving);
                 });
-        if (!LiveMap.hasPermission(this) && !prefs.getBoolean("asked_location", false)) {
+        // أول تشغيل: نطلب الموقع (للخريطة والتنبيهات) والإشعارات (لتنبيهات الصلاة على أندرويد ١٣+) معًا
+        if (!prefs.getBoolean("asked_location", false)) {
             prefs.edit().putBoolean("asked_location", true).apply();
-            requestPermissions(new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION,
-                    android.Manifest.permission.ACCESS_COARSE_LOCATION}, REQ_LOCATION);
+            java.util.List<String> ask = new java.util.ArrayList<>();
+            if (!LiveMap.hasPermission(this)) {
+                ask.add(android.Manifest.permission.ACCESS_FINE_LOCATION);
+                ask.add(android.Manifest.permission.ACCESS_COARSE_LOCATION);
+            }
+            if (android.os.Build.VERSION.SDK_INT >= 33
+                    && checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
+                ask.add(android.Manifest.permission.POST_NOTIFICATIONS);
+            if (!ask.isEmpty()) requestPermissions(ask.toArray(new String[0]), REQ_LOCATION);
         }
     }
 
@@ -140,6 +148,7 @@ public class MainActivity extends Activity {
         ui.post(ticker);
         backdrop.start();
         liveMap.start();
+        PrayerAlerts.schedule(this);
         if (!introPlayed) { introPlayed = true; playIntro(); }
     }
 
@@ -247,6 +256,17 @@ public class MainActivity extends Activity {
             tomorrowTimes = PrayerTimes.forDay(tm, c);
         }
         long t = now.getTimeInMillis();
+        // بين الأذان والإقامة: نعرض «إقامة» مع الوقت الباقي بلون مميز
+        for (int k : PrayerTimes.PRAYERS) {
+            long iq = todayTimes[k] + PrayerTimes.IQAMA[k] * 60_000L;
+            if (t >= todayTimes[k] && t < iq) {
+                prayerName.setText(R.string.pa_rail_iqama);
+                prayerTime.setText(Lang.left(this, iq - t));
+                prayerTime.setTextColor(getColor(R.color.green));
+                return;
+            }
+        }
+        prayerTime.setTextColor(getColor(R.color.orange));
         int next = -1;
         for (int k : PrayerTimes.PRAYERS) if (todayTimes[k] > t) { next = k; break; }
         long at = next == -1 ? tomorrowTimes[PrayerTimes.FAJR] : todayTimes[next];

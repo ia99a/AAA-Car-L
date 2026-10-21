@@ -78,4 +78,16 @@
     <string name="video_home">YouTube home</string>
     <string name="video_open_brave">Open in Brave</string>
     <string name="video_driving">Picture hidden while driving\nSound keeps playing</string>
+    <string name="set_prayer_alerts">Prayer alerts</string>
+    <string name="set_prayer_alerts_desc">A chime before adhan, at adhan, and before iqama</string>
+    <string name="set_preview_tone">Hear the chime</string>
+    <string name="pa_soon_title">Adhan soon</string>
+    <string name="pa_soon_text">%1$s in 10 minutes</string>
+    <string name="pa_adhan_title">Time for %1$s</string>
+    <string name="pa_adhan_text">Iqama at %1$s</string>
+    <string name="pa_iqama_text">Iqama in 5 minutes</string>
+    <string name="pa_rail_iqama">Iqama</string>
+    <string name="pa_ch_soon">Before adhan</string>
+    <string name="pa_ch_adhan">Adhan</string>
+    <string name="pa_ch_iqama">Before iqama</string>
 </resources>

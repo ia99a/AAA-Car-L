@@ -25,6 +25,15 @@ import java.util.List;
 public class SettingsActivity extends Activity {
 
     private final List<String> chosen = new ArrayList<>();
+    private int toneIndex = 1; // أول ضغطة تُسمعك نغمة الأذان
+    private android.media.MediaPlayer player;
+
+    /** يُسمع النغمة كما ستُسمع في الإشعار */
+    private void playTone(int res) {
+        if (player != null) player.release();
+        player = android.media.MediaPlayer.create(this, res);
+        if (player != null) { player.setOnCompletionListener(android.media.MediaPlayer::release); player.start(); }
+    }
 
     @Override
     protected void attachBaseContext(Context base) { super.attachBaseContext(Lang.wrap(base)); }
@@ -62,6 +71,19 @@ public class SettingsActivity extends Activity {
         paintNav.run();
         navMaps.setOnClickListener(v -> { Lang.prefs(this).edit().putString("nav_app", "maps").apply(); paintNav.run(); });
         navHud.setOnClickListener(v -> { Lang.prefs(this).edit().putString("nav_app", "hudhud").apply(); paintNav.run(); });
+
+        // تنبيهات الصلاة، وزر لسماع نغمة الأذان
+        Switch swP = findViewById(R.id.switch_prayer_alerts);
+        swP.setChecked(PrayerAlerts.enabled(this));
+        findViewById(R.id.row_prayer_alerts).setOnClickListener(v -> {
+            boolean on = !PrayerAlerts.enabled(this);
+            PrayerAlerts.setEnabled(this, on);
+            swP.setChecked(on);
+        });
+        findViewById(R.id.btn_preview_tone).setOnClickListener(v -> {
+            int[] tones = {R.raw.chime_soon, R.raw.chime_adhan, R.raw.chime_iqama};
+            playTone(tones[toneIndex++ % 3]);
+        });
 
         // البار السفلي
         Switch sw = findViewById(R.id.switch_dock);
@@ -132,6 +154,12 @@ public class SettingsActivity extends Activity {
         if (lang.equals(Lang.get(this))) return;
         Lang.prefs(this).edit().putString("lang", lang).apply();
         recreate(); // الرئيسية تتحدث بنفسها عند الرجوع إليها
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (player != null) { try { player.release(); } catch (Exception ignored) { } player = null; }
+        super.onDestroy();
     }
 
     private void saveTools() {

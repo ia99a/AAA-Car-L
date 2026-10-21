@@ -53,6 +53,7 @@ public class PrayerActivity extends Activity {
             chip.setLayoutParams(lp);
             chip.setOnClickListener(v -> {
                 Lang.prefs(this).edit().putString("city", c.key).apply();
+                PrayerAlerts.schedule(this);
                 buildCities();
                 buildTimes();
             });
