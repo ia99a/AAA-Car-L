@@ -51,10 +51,15 @@
         android:orientation="horizontal">
 
         <!-- الإعدادات العامة -->
-        <LinearLayout
+        <ScrollView
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <TextView
@@ -67,7 +72,7 @@
             <!-- اللغة -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="56dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/button_bg"
                 android:gravity="center_vertical"
@@ -121,11 +126,68 @@
                     android:textSize="14sp" />
             </LinearLayout>
 
+            <!-- تطبيق الخرائط لزر «موقعي» -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/button_bg"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="14dp"
+                android:paddingEnd="10dp">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_location" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:text="@string/set_nav_app"
+                    android:textColor="@color/ink"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/nav_maps"
+                    android:layout_width="wrap_content"
+                    android:layout_height="38dp"
+                    android:background="@drawable/chip_bg"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:text="@string/maps"
+                    android:textColor="@color/ink"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/nav_hudhud"
+                    android:layout_width="wrap_content"
+                    android:layout_height="38dp"
+                    android:layout_marginStart="6dp"
+                    android:background="@drawable/chip_bg"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:text="@string/hudhud"
+                    android:textColor="@color/ink"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
             <!-- البار السفلي -->
             <LinearLayout
                 android:id="@+id/row_dock"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="56dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/button_bg"
                 android:clickable="true"
@@ -176,7 +238,7 @@
             <LinearLayout
                 android:id="@+id/row_adblock"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="56dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/button_bg"
                 android:clickable="true"
@@ -222,7 +284,7 @@
             <LinearLayout
                 android:id="@+id/row_system"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="56dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/button_bg"
                 android:clickable="true"
@@ -263,6 +325,8 @@
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
+
+        </ScrollView>
 
         <!-- أدوات شريط السائق -->
         <LinearLayout

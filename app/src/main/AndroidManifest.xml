@@ -3,6 +3,11 @@
 
     <!-- إذن عادي بلا نافذة موافقة: لمعرفة هل حجب الإعلانات (DNS خاص) مفعّل -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- الإنترنت: بلاطات الخريطة، وبيانات الكاميرات والمطبات، ولوحة الفيديو -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- الموقع: لتتبع سيارتك على الخريطة وتنبيهات الطريق. يُطلب مرة واحدة، ويعمل التطبيق بدونه -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <!-- أندرويد ١١ فما فوق: رؤية التطبيقات التي لها أيقونة فقط (لعرضها وفتحها)، ولا شيء غيرها -->
     <queries>
@@ -14,7 +19,7 @@
 
     <!-- الأمان:
          allowBackup=false + القواعد: لا تُنسخ الإعدادات خارج الجهاز
-         usesCleartextTraffic=false: لا اتصال غير مشفّر (التطبيق أصلًا بلا إذن إنترنت)
+         usesCleartextTraffic=false: لا اتصال غير مشفّر، كل الاتصالات https
          taskAffinity="" للشاشات الداخلية: لا يستطيع تطبيق آخر أن يندسّ في مهمتها -->
     <application
         android:allowBackup="false"
@@ -24,6 +29,7 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
+        android:hardwareAccelerated="true"
         android:theme="@style/CarTheme">
 
         <activity

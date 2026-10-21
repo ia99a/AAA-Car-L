@@ -23,8 +23,8 @@ rm -rf "$OUT" && mkdir -p "$OUT/gen" "$OUT/classes" "$OUT/dex"
 sed 's#<manifest xmlns:android="http://schemas.android.com/apk/res/android">#<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.santafe.launcher">#' \
   "$SRC/AndroidManifest.xml" > "$OUT/AndroidManifest.xml"
 "$AAPT" compile --dir "$SRC/res" -o "$OUT/res.zip"
-"$AAPT" link -o "$OUT/base.apk" -I "$AJ" --manifest "$OUT/AndroidManifest.xml" --java "$OUT/gen" \
-  --min-sdk-version 24 --target-sdk-version 34 --version-code 5 --version-name 1.4 -R "$OUT/res.zip" --auto-add-overlay
+"$AAPT" link -o "$OUT/base.apk" -I "$AJ" --manifest "$OUT/AndroidManifest.xml" --java "$OUT/gen" -A "$SRC/assets" \
+  --min-sdk-version 24 --target-sdk-version 34 --version-code 6 --version-name 1.5 -R "$OUT/res.zip" --auto-add-overlay
 
 # ٢) الكود
 javac -encoding UTF-8 --release 11 -classpath "$AJ" -d "$OUT/classes" \

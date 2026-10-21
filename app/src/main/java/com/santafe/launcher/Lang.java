@@ -74,4 +74,21 @@ public final class Lang {
         if (h == 0) return nf.format(m) + M;
         return nf.format(h) + H + " " + nf.format(m) + M;
     }
+
+    /** «٣٢٠ م» أو «320 m»، مقرّبة لأقرب ١٠ أمتار */
+    public static String meters(Context c, double m) {
+        long r = Math.round(m / 10.0) * 10;
+        boolean ar = isArabic(c);
+        NumberFormat nf = NumberFormat.getInstance(ar ? new Locale("ar", "SA") : Locale.ENGLISH);
+        nf.setGroupingUsed(false);
+        return nf.format(r) + (ar ? " م" : " m");
+    }
+
+    /** «٦٥ كم/س» أو «65 km/h» */
+    public static String speed(Context c, double kmh) {
+        boolean ar = isArabic(c);
+        NumberFormat nf = NumberFormat.getInstance(ar ? new Locale("ar", "SA") : Locale.ENGLISH);
+        nf.setGroupingUsed(false);
+        return nf.format(Math.round(kmh)) + (ar ? " كم/س" : " km/h");
+    }
 }

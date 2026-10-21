@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * إعدادات المشغّل: لغة الواجهة، إظهار البار السفلي أو إخفاؤه، حجب الإعلانات، إعدادات أندرويد،
+ * إعدادات المشغّل: لغة الواجهة، تطبيق الخرائط لزر «موقعي»، إظهار البار السفلي أو إخفاؤه، حجب الإعلانات، إعدادات أندرويد،
  * وإضافة أدوات شريط السائق أو إزالتها (الترتيب في الشريط يتبع ترتيب القائمة).
  */
 public class SettingsActivity extends Activity {
@@ -28,6 +28,11 @@ public class SettingsActivity extends Activity {
 
     @Override
     protected void attachBaseContext(Context base) { super.attachBaseContext(Lang.wrap(base)); }
+
+    /** تطبيق الخرائط لزر «موقعي»: "maps" (افتراضي) أو "hudhud" */
+    static String navApp(Context c) {
+        return "hudhud".equals(Lang.prefs(c).getString("nav_app", "maps")) ? "hudhud" : "maps";
+    }
 
     /** هل البار السفلي ظاهر؟ ظاهر افتراضيًا */
     static boolean dockVisible(Context c) {
@@ -46,6 +51,17 @@ public class SettingsActivity extends Activity {
         en.setSelected(!Lang.isArabic(this));
         ar.setOnClickListener(v -> setLang("ar"));
         en.setOnClickListener(v -> setLang("en"));
+
+        // تطبيق الخرائط الذي يفتحه زر «موقعي»
+        View navMaps = findViewById(R.id.nav_maps), navHud = findViewById(R.id.nav_hudhud);
+        Runnable paintNav = () -> {
+            boolean hud = "hudhud".equals(navApp(this));
+            navMaps.setSelected(!hud);
+            navHud.setSelected(hud);
+        };
+        paintNav.run();
+        navMaps.setOnClickListener(v -> { Lang.prefs(this).edit().putString("nav_app", "maps").apply(); paintNav.run(); });
+        navHud.setOnClickListener(v -> { Lang.prefs(this).edit().putString("nav_app", "hudhud").apply(); paintNav.run(); });
 
         // البار السفلي
         Switch sw = findViewById(R.id.switch_dock);

@@ -24,15 +24,13 @@
     <string name="tool_apps">التطبيقات</string>
 
     <!-- اختيار الخريطة -->
-    <string name="location_title">افتح موقعي في</string>
-    <string name="cancel">إلغاء</string>
 
     <!-- تعديل الأدوات -->
     <string name="tools_hint">اضغط على أداة لإضافتها أو إزالتها. </string>
     <string name="tools_done">تم</string>
     <string name="tools_max">وصلت للحد الأقصى: ست أدوات</string>
     <string name="tools_min">اترك أداة واحدة على الأقل</string>
-    <string name="tool_location_desc">يفتح موقعك في خرائط قوقل أو هدهد</string>
+    <string name="tool_location_desc">يفتح موقعك في تطبيق الخرائط المختار من الإعدادات</string>
     <string name="tool_prayer_desc">الصلاة القادمة، واضغط لكل الأوقات</string>
     <string name="tool_apps_desc">قائمة كل التطبيقات</string>
 
@@ -61,12 +59,7 @@
     <string name="city_jazan">جازان</string>
     <string name="city_tabuk">تبوك</string>
     <string name="tool_brave">Brave</string>
-    <string name="tool_brave_desc">فيديو بلا إعلانات في نافذة صغيرة</string>
-    <string name="brave_sub">فيديو بلا إعلانات</string>
-    <string name="brave_small">تصغير</string>
-    <string name="brave_large">تكبير</string>
-    <string name="brave_not_installed">غير مثبّت · اضغط للتثبيت</string>
-    <string name="brave_freeform_tip">إن فتح بملء الشاشة: شاشتك لا تدعم النوافذ العائمة، أو فعّلها من خيارات المطوّر</string>
+    <string name="tool_brave_desc">يفتح متصفح Brave بلا إعلانات</string>
     <string name="settings_title">الإعدادات</string>
     <string name="set_general">عام</string>
     <string name="set_language">لغة الواجهة</string>
@@ -81,4 +74,12 @@
     <string name="road_fahd">طريق الملك فهد</string>
     <string name="road_olaya">شارع العليا</string>
     <string name="road_takhassusi">طريق التخصصي</string>
+    <string name="set_nav_app">تطبيق «موقعي»</string>
+    <string name="alert_camera">كاميرا ساهر</string>
+    <string name="alert_bump">مطب</string>
+    <string name="video_large">تكبير</string>
+    <string name="video_small">تصغير</string>
+    <string name="video_home">صفحة يوتيوب الرئيسية</string>
+    <string name="video_open_brave">افتح في Brave</string>
+    <string name="video_driving">الصورة مخفية أثناء القيادة\nالصوت مستمر</string>
 </resources>

@@ -2,7 +2,7 @@
 <!--
   الشاشة الرئيسية لشاشة سنتافي العريضة (حوالي ١٩٢٠×٧٢٠، نسبة ٨:٣):
   خريطة داكنة متحركة تملأ الخلفية، وشريط السائق ثابت في يسار الشاشة بأي لغة (أقرب للسائق)،
-  ثم المحتوى: بطاقة الوقت، مربع Brave يسار الشاشة، بطاقتا الخرائط، وبار أيقونات صغير يُخفى من الإعدادات. اتجاه المحتوى يتبع اللغة.
+  ثم المحتوى: بطاقة الوقت، لوحة الفيديو يسار الشاشة، بطاقتا الخرائط، وبار أيقونات صغير يُخفى من الإعدادات. اتجاه المحتوى يتبع اللغة.
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -10,8 +10,15 @@
     android:background="@color/bg"
     android:clipChildren="false">
 
+    <!-- الخلفية المرسومة: تظهر حتى يصل أول موقع، أو دائمًا إن لم يُسمح بالموقع -->
     <com.santafe.launcher.MapBackdropView
         android:id="@+id/backdrop"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- الخريطة الحية: موقعك والكاميرات والمطبات -->
+    <WebView
+        android:id="@+id/map_web"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
@@ -127,6 +134,20 @@
                 android:layout_height="1dp"
                 android:layout_weight="1" />
 
+            <!-- السرعة الحالية من GPS، في طرف الصف العلوي -->
+            <TextView
+                android:id="@+id/speed"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:background="@drawable/speed_bg"
+                android:gravity="center"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:textColor="@color/ink"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
 
         </LinearLayout>
 
@@ -136,7 +157,7 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <!-- الصف السفلي: مربع Brave يسار الشاشة (جهة السائق) دائمًا، وبطاقتا الخرائط في الجهة الأخرى -->
+        <!-- الصف السفلي: لوحة الفيديو يسار الشاشة (جهة السائق) دائمًا، وبطاقتا الخرائط في الجهة الأخرى -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -146,9 +167,9 @@
             android:orientation="horizontal">
 
             <include
-                android:id="@+id/card_brave"
-                layout="@layout/card_brave"
-                android:layout_width="220dp"
+                android:id="@+id/card_video"
+                layout="@layout/card_video"
+                android:layout_width="296dp"
                 android:layout_height="wrap_content" />
 
             <View
@@ -193,4 +214,72 @@
             android:paddingEnd="4dp" />
     </LinearLayout>
     </LinearLayout>
+
+    <!-- تنبيه الطريق: كاميرا أو مطب أمامك -->
+    <LinearLayout
+        android:id="@+id/alert_box"
+        android:layout_width="wrap_content"
+        android:layout_height="44dp"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/alert_cam_bg"
+        android:elevation="8dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="18dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/alert_icon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_camera_alert" />
+
+        <TextView
+            android:id="@+id/alert_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/alert_dist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+
+
+    <!-- طبقة ملء الشاشة للفيديو، مع زر تصغير ثابت -->
+    <FrameLayout
+        android:id="@+id/video_full"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FF000000"
+        android:elevation="12dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/video_full_close"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_gravity="top|start"
+            android:layout_margin="12dp"
+            android:background="@drawable/button_bg"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:text="@string/video_small"
+            android:textColor="@color/ink"
+            android:textSize="14sp" />
+    </FrameLayout>
 </FrameLayout>

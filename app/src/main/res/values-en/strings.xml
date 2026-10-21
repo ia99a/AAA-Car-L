@@ -22,14 +22,12 @@
     <string name="tool_prayer">Prayer</string>
     <string name="tool_apps">Apps</string>
 
-    <string name="location_title">Open my location in</string>
-    <string name="cancel">Cancel</string>
 
     <string name="tools_hint">Tap a tool to add or remove it.</string>
     <string name="tools_done">Done</string>
     <string name="tools_max">The bar is full: six tools at most</string>
     <string name="tools_min">Keep at least one tool</string>
-    <string name="tool_location_desc">Opens your location in Google Maps or Hudhud</string>
+    <string name="tool_location_desc">Opens your location in the map app chosen in Settings</string>
     <string name="tool_prayer_desc">Next prayer; tap for all times</string>
     <string name="tool_apps_desc">List of all apps</string>
 
@@ -57,12 +55,7 @@
     <string name="city_jazan">Jazan</string>
     <string name="city_tabuk">Tabuk</string>
     <string name="tool_brave">Brave</string>
-    <string name="tool_brave_desc">Ad-free video in a small window</string>
-    <string name="brave_sub">Ad-free video</string>
-    <string name="brave_small">Small</string>
-    <string name="brave_large">Full</string>
-    <string name="brave_not_installed">Not installed · Tap to get it</string>
-    <string name="brave_freeform_tip">Opened full screen? Your screen may not support floating windows, or turn them on in Developer options</string>
+    <string name="tool_brave_desc">Opens the Brave ad-free browser</string>
     <string name="settings_title">Settings</string>
     <string name="set_general">General</string>
     <string name="set_language">Language</string>
@@ -77,4 +70,12 @@
     <string name="road_fahd">King Fahd Rd</string>
     <string name="road_olaya">Olaya St</string>
     <string name="road_takhassusi">Takhassusi Rd</string>
+    <string name="set_nav_app">Location opens</string>
+    <string name="alert_camera">Speed camera</string>
+    <string name="alert_bump">Speed bump</string>
+    <string name="video_large">Full screen</string>
+    <string name="video_small">Shrink</string>
+    <string name="video_home">YouTube home</string>
+    <string name="video_open_brave">Open in Brave</string>
+    <string name="video_driving">Picture hidden while driving\nSound keeps playing</string>
 </resources>

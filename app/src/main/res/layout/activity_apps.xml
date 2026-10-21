@@ -63,10 +63,10 @@
         android:layout_height="0dp"
         android:layout_marginTop="12dp"
         android:layout_weight="1"
-        android:columnWidth="104dp"
-        android:horizontalSpacing="8dp"
+        android:columnWidth="150dp"
+        android:horizontalSpacing="12dp"
         android:numColumns="auto_fit"
         android:scrollbars="none"
         android:stretchMode="columnWidth"
-        android:verticalSpacing="8dp" />
+        android:verticalSpacing="12dp" />
 </LinearLayout>
