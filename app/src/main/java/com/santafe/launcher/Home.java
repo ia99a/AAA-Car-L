@@ -6,10 +6,10 @@ import android.content.Context;
 final class Home {
     private Home() { }
 
-    static final String CLOCK = "clock", SPEED = "speed", VIDEO = "video", MAPS = "maps", HUDHUD = "hudhud", DOCK = "dock";
+    static final String CLOCK = "clock", SPEED = "speed", VIDEO = "video", MAPS = "maps", HUDHUD = "hudhud", DOCK = "dock", IQAMA = "iqama";
     /** عناصر تُظهر وتُخفى بزر واحد (خرائط قوقل وهدهد لهما سطران مستقلان بأربعة أوضاع) */
-    static final String[] ITEMS = {CLOCK, SPEED, VIDEO, DOCK};
-    static final int[] NAMES = {R.string.el_clock, R.string.el_speed, R.string.el_video, R.string.el_dock};
+    static final String[] ITEMS = {CLOCK, SPEED, VIDEO, DOCK, IQAMA};
+    static final int[] NAMES = {R.string.el_clock, R.string.el_speed, R.string.el_video, R.string.el_dock, R.string.el_iqama};
 
     /** طريقة عرض خرائط قوقل وهدهد: بطاقة، أيقونة فقط، خريطة حية مصغّرة، أو مخفية */
     static final String CARD = "card", ICON = "icon", LIVE = "live", HIDDEN = "hidden";

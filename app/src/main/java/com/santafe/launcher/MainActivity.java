@@ -52,9 +52,12 @@ public class MainActivity extends Activity {
     private SharedPreferences prefs;
     private final Handler ui = new Handler(Looper.getMainLooper());
     private final Runnable ticker = new Runnable() {
-        @Override public void run() { refreshPrayer(); refreshDate(); ui.postDelayed(this, 5000); }
+        @Override public void run() { refreshPrayer(); refreshDate(); updateIqama(); ui.postDelayed(this, 5000); }
     };
     private TextView prayerName, prayerTime;
+    private View prayerItem;
+    private IqamaBubble bubble;
+    private final Runnable iqamaTick = this::updateIqama;
     private TextClock clockTime;
     private TextView clockDate;
     private ImageView clockIcon;
@@ -143,6 +146,17 @@ public class MainActivity extends Activity {
         // الخريطة الحية خلف الشاشة، مع تنبيهات الكاميرات والمطبات
         View alert = findViewById(R.id.alert_box);
         mapStatus = findViewById(R.id.map_status);
+
+        // فقاعة مؤقت الإقامة بجانب أداة الصلاة في الشريط
+        bubble = new IqamaBubble(this);
+        bubble.setLayoutDirection(Lang.isArabic(this) ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
+        bubble.setElevation(6 * getResources().getDisplayMetrics().density);
+        bubble.setVisibility(View.GONE);
+        bubble.setOnClickListener(v -> startActivity(new Intent(this, PrayerActivity.class)));
+        android.widget.FrameLayout.LayoutParams blp = new android.widget.FrameLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT, android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
+        blp.gravity = android.view.Gravity.TOP | android.view.Gravity.LEFT;
+        ((android.view.ViewGroup) findViewById(R.id.root)).addView(bubble, blp);
         liveMap = new LiveMap(this, findViewById(R.id.map_web), backdrop, alert,
                 findViewById(R.id.alert_text), findViewById(R.id.alert_dist), Home.mapBackground(this), new LiveMap.Listener() {
                     @Override public void onSpeed(double kmh, boolean moving) {
@@ -207,6 +221,7 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
         ui.removeCallbacks(ticker);
+        ui.removeCallbacks(iqamaTick);
         liveMap.stop();
         if (miniMaps != null) miniMaps.pause();
         if (miniHud != null) miniHud.pause();
@@ -281,6 +296,7 @@ public class MainActivity extends Activity {
         for (int id : ids) fade(findViewById(id), alpha);
         fade(cardMaps, alpha);
         fade(cardHudhud, alpha);
+        bubble.setBackgroundOpacity(Math.max(alpha, 140)); // الفقاعة تبقى مقروءة دائمًا
         // الظل تحت بطاقة الساعة يختفي مع الشفافية حتى لا يظهر إطار رمادي حول بطاقة شفافة
         findViewById(R.id.top_card).setElevation(4 * dp * op / 100f);
     }
@@ -359,6 +375,7 @@ public class MainActivity extends Activity {
     private void buildRail() {
         railItems.removeAllViews();
         prayerName = prayerTime = null;
+        prayerItem = null;
         LayoutInflater inf = LayoutInflater.from(this);
         for (String k : Tools.enabled(this)) {
             View item = inf.inflate(R.layout.item_rail, railItems, false);
@@ -372,6 +389,7 @@ public class MainActivity extends Activity {
                     break;
                 case Tools.PRAYER:
                     prayerName = label;
+                    prayerItem = item;
                     prayerName.setVisibility(View.VISIBLE);
                     prayerTime = item.findViewById(R.id.rail_extra);
                     prayerTime.setVisibility(View.VISIBLE);
@@ -387,6 +405,74 @@ public class MainActivity extends Activity {
         }
         timesDay = -1; // نعيد حساب الصلاة للمدينة الحالية
         refreshPrayer();
+    }
+
+    /**
+     * مؤقت الإقامة: يظهر من الأذان حتى الإقامة ويعدّ كل ثانية، ذهبي في آخر دقيقة،
+     * ثم «أقيمت الصلاة» دقيقة واحدة ويختفي. لا يعمل مؤقت الثواني إلا وهو ظاهر.
+     */
+    private void updateIqama() {
+        ui.removeCallbacks(iqamaTick);
+        if (todayTimes == null || prayerItem == null || !Home.shown(this, Home.IQAMA)) { hideBubble(); return; }
+        long t = System.currentTimeMillis();
+        for (int k : PrayerTimes.PRAYERS) {
+            if (PrayerTimes.IQAMA[k] <= 0) continue;
+            long iq = todayTimes[k] + PrayerTimes.IQAMA[k] * 60_000L;
+            if (t < todayTimes[k] || t >= iq + 60_000L) continue;
+            long left = iq - t;
+            if (left > 0) {
+                long sec = (left + 999) / 1000;
+                bubble.set(getString(R.string.iq_in), mmss(sec), sec < 60);
+            } else {
+                bubble.set(getString(R.string.iq_done), "", true);
+            }
+            showBubble();
+            ui.postDelayed(iqamaTick, 1000 - t % 1000 + 5);
+            return;
+        }
+        hideBubble();
+    }
+
+    private String mmss(long sec) {
+        java.text.NumberFormat nf = java.text.NumberFormat.getInstance(Lang.isArabic(this) ? new Locale("ar", "SA") : Locale.ENGLISH);
+        nf.setMinimumIntegerDigits(2);
+        nf.setGroupingUsed(false);
+        return nf.format(sec / 60) + ":" + nf.format(sec % 60);
+    }
+
+    private void showBubble() {
+        placeBubble();
+        if (bubble.getVisibility() == View.VISIBLE) return;
+        float dp = getResources().getDisplayMetrics().density;
+        bubble.setAlpha(0f);
+        bubble.setTranslationX(-16 * dp);
+        bubble.setVisibility(View.VISIBLE);
+        bubble.animate().alpha(1f).translationX(0f).setDuration(380)
+                .setInterpolator(new DecelerateInterpolator(2f)).start();
+    }
+
+    private void hideBubble() {
+        if (bubble.getVisibility() != View.VISIBLE) return;
+        bubble.animate().alpha(0f).setDuration(250).withEndAction(() -> bubble.setVisibility(View.GONE)).start();
+    }
+
+    /** على حافة الشريط اليسار، في مستوى أداة الصلاة */
+    private void placeBubble() {
+        if (prayerItem == null || prayerItem.getHeight() == 0) { ui.post(this::placeBubble); return; }
+        View root = findViewById(R.id.root), rail = findViewById(R.id.rail);
+        int[] r = new int[2], a = new int[2], rl = new int[2];
+        root.getLocationInWindow(r);
+        prayerItem.getLocationInWindow(a);
+        rail.getLocationInWindow(rl);
+        float dp = getResources().getDisplayMetrics().density;
+        android.widget.FrameLayout.LayoutParams lp = (android.widget.FrameLayout.LayoutParams) bubble.getLayoutParams();
+        int left = rl[0] - r[0] + rail.getWidth() + (int) (4 * dp);
+        int top = a[1] - r[1] + prayerItem.getHeight() / 2 - (int) (15 * dp);
+        if (lp.leftMargin != left || lp.topMargin != top) {
+            lp.leftMargin = left;
+            lp.topMargin = top;
+            bubble.setLayoutParams(lp);
+        }
     }
 
     /** يحدّث أداة الصلاة: اسم الصلاة القادمة ووقتها */

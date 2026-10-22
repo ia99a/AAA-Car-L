@@ -172,4 +172,7 @@
     <string name="set_opacity">الشفافية</string>
     <string name="opacity_less">أكثر شفافية</string>
     <string name="opacity_more">أقل شفافية</string>
+    <string name="el_iqama">مؤقت الإقامة</string>
+    <string name="iq_in">الإقامة بعد</string>
+    <string name="iq_done">أقيمت الصلاة</string>
 </resources>

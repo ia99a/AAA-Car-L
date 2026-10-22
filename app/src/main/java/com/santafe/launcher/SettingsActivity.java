@@ -265,7 +265,7 @@ public class SettingsActivity extends Activity {
         for (int i = 0; i < Home.ITEMS.length; i++) {
             final String item = Home.ITEMS[i];
             TextView c = chip(getString(Home.NAMES[i]), Home.shown(this, item), 40, true);
-            android.widget.LinearLayout row = i < 2 ? r1 : r2;
+            android.widget.LinearLayout row = i < 3 ? r1 : r2;
             if (row.getChildCount() > 0) ((android.widget.LinearLayout.LayoutParams) c.getLayoutParams()).setMarginStart((int) (6 * dp));
             c.setOnClickListener(v -> {
                 boolean on = !Home.shown(this, item);
