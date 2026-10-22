@@ -273,10 +273,29 @@ public class MainActivity extends Activity {
         if (!d.equals(lastDate)) { lastDate = d; clockDate.setText(d); }
     }
 
+    /** شفافية خلفيات البطاقات والبارات (النص والأيقونات لا تتأثر) */
+    private void applyOpacity() {
+        int op = Looks.opacity(this), alpha = Math.round(op * 2.55f);
+        float dp = getResources().getDisplayMetrics().density;
+        int[] ids = {R.id.top_card, R.id.speed, R.id.rail, R.id.dock, R.id.card_video};
+        for (int id : ids) fade(findViewById(id), alpha);
+        fade(cardMaps, alpha);
+        fade(cardHudhud, alpha);
+        // الظل تحت بطاقة الساعة يختفي مع الشفافية حتى لا يظهر إطار رمادي حول بطاقة شفافة
+        findViewById(R.id.top_card).setElevation(4 * dp * op / 100f);
+    }
+
+    private static void fade(View v, int alpha) {
+        if (v == null || v.getBackground() == null) return;
+        v.setBackground(v.getBackground().mutate()); // نسخة خاصة حتى لا تتأثر شاشات أخرى بنفس الخلفية
+        v.getBackground().setAlpha(alpha);
+    }
+
     /** إظهار عناصر الرئيسية أو إخفاؤها حسب الإعدادات، ولون النقش */
     private void applyHomeItems() {
         backdrop.setPalette(PatternView.current(this));
         applyLooks();
+        applyOpacity();
         findViewById(R.id.top_card).setVisibility(Home.shown(this, Home.CLOCK) ? View.VISIBLE : View.INVISIBLE);
         if (!Home.shown(this, Home.SPEED)) speedView.setVisibility(View.GONE);
         applyNavMode(cardMaps, Home.navMode(this, Home.MAPS));

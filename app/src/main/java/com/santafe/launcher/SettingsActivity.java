@@ -277,6 +277,30 @@ public class SettingsActivity extends Activity {
         buildNavModes(R.id.nav_modes_maps, Home.MAPS);
         buildNavModes(R.id.nav_modes_hudhud, Home.HUDHUD);
         buildWidgets();
+        buildOpacity();
+    }
+
+    /** الشفافية: شريط بعشر خطوات (كل خطوة ١٠٪) مع زرّي − و+ للضبط الدقيق أثناء القيادة */
+    private void buildOpacity() {
+        android.widget.SeekBar bar = findViewById(R.id.opacity_seek);
+        TextView val = findViewById(R.id.opacity_value);
+        java.util.function.IntConsumer show = v -> {
+            java.text.NumberFormat nf = java.text.NumberFormat.getInstance(Lang.isArabic(this) ? new java.util.Locale("ar", "SA") : java.util.Locale.ENGLISH);
+            val.setText(nf.format(v) + (Lang.isArabic(this) ? "٪" : "%"));
+        };
+        int cur = Looks.opacity(this);
+        bar.setProgress(cur / 10);
+        show.accept(cur);
+        bar.setOnSeekBarChangeListener(new android.widget.SeekBar.OnSeekBarChangeListener() {
+            @Override public void onProgressChanged(android.widget.SeekBar s, int p, boolean user) {
+                Looks.setOpacity(SettingsActivity.this, p * 10);
+                show.accept(p * 10);
+            }
+            @Override public void onStartTrackingTouch(android.widget.SeekBar s) { }
+            @Override public void onStopTrackingTouch(android.widget.SeekBar s) { }
+        });
+        findViewById(R.id.opacity_minus).setOnClickListener(v -> bar.setProgress(Math.max(0, bar.getProgress() - 1)));
+        findViewById(R.id.opacity_plus).setOnClickListener(v -> bar.setProgress(Math.min(10, bar.getProgress() + 1)));
     }
 
     // ───────── الساعة والسرعة والرادار ─────────

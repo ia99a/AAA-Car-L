@@ -400,6 +400,78 @@
                 </HorizontalScrollView>
             </LinearLayout>
 
+            <!-- شفافية خلفيات عناصر الرئيسية: من ١٠٠٪ إلى ٠٪ بخطوات ١٠٪ -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/button_bg"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_opacity" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:text="@string/set_opacity"
+                    android:textColor="@color/ink"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/opacity_minus"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:layout_marginStart="10dp"
+                    android:background="@drawable/chip_bg"
+                    android:clickable="true"
+                    android:contentDescription="@string/opacity_less"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:text="−"
+                    android:textColor="@color/ink"
+                    android:textSize="18sp" />
+
+                <SeekBar
+                    android:id="@+id/opacity_seek"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:max="10"
+                    android:progressTint="@color/orange"
+                    android:thumbTint="@color/orange" />
+
+                <TextView
+                    android:id="@+id/opacity_plus"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:background="@drawable/chip_bg"
+                    android:clickable="true"
+                    android:contentDescription="@string/opacity_more"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:text="+"
+                    android:textColor="@color/ink"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/opacity_value"
+                    android:layout_width="52dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:textColor="@color/orange"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
             <!-- ما يظهر في الرئيسية: الضغط يُظهر العنصر أو يخفيه -->
             <LinearLayout
                 android:layout_width="match_parent"

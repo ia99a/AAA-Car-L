@@ -165,4 +165,7 @@
     <string name="radar_cams">Cameras</string>
     <string name="radar_bumps">Bumps</string>
     <string name="radar_sound">Sound</string>
+    <string name="set_opacity">Opacity</string>
+    <string name="opacity_less">More transparent</string>
+    <string name="opacity_more">Less transparent</string>
 </resources>

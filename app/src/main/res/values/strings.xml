@@ -169,4 +169,7 @@
     <string name="radar_cams">الكاميرات</string>
     <string name="radar_bumps">المطبات</string>
     <string name="radar_sound">الصوت</string>
+    <string name="set_opacity">الشفافية</string>
+    <string name="opacity_less">أكثر شفافية</string>
+    <string name="opacity_more">أقل شفافية</string>
 </resources>

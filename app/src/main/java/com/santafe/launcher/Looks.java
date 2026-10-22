@@ -59,6 +59,16 @@ final class Looks {
         return (r << 16) | (g << 8) | bl;
     }
 
+    // ───── الشفافية ─────
+
+    /** شفافية خلفيات عناصر الرئيسية: ١٠٠ معتمة تمامًا، ٠ شفافة تمامًا (النص والأيقونات تبقى ظاهرة) */
+    static int opacity(Context c) {
+        int v = Lang.prefs(c).getInt("ui_opacity", 100);
+        return Math.max(0, Math.min(100, v / 10 * 10));
+    }
+
+    static void setOpacity(Context c, int v) { Lang.prefs(c).edit().putInt("ui_opacity", v).apply(); }
+
     // ───── الوقت والتاريخ ─────
 
     static boolean clock24(Context c) { return Lang.prefs(c).getBoolean("clock_24h", false); }
