@@ -58,8 +58,12 @@ public class PatternView extends View {
     }
 
     /** درجة الرمادي t (0..255) تصير: لون النقش + t × (لون الأرضية − لون النقش) */
+    private int palette = -1;
+
     void setPalette(int i) {
         if (i < 0 || i >= COLORS.length) i = 0;
+        if (i == palette) return; // نفس اللون: لا نعيد رسم الطبقة
+        palette = i;
         int c0 = COLORS[i][0], c1 = COLORS[i][1];
         float[] m = new float[20];
         int[] sh = {16, 8, 0};

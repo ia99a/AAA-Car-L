@@ -40,9 +40,10 @@ public class IqamaBubble extends View {
 
     /** النص: label مثل «الإقامة بعد»، و digits مثل «٠٨:٤١» (فارغ عند «أقيمت الصلاة») */
     void set(String labelText, String digitText, boolean gold) {
-        boolean resize = !labelText.equals(this.labelText) || digitText.length() != this.digitText.length();
         this.labelText = labelText;
         this.digitText = digitText;
+        // الأرقام العربية ليست بعرض واحد: نعيد القياس كلما تغيّر العرض اللازم حتى لا يُقص الرقم
+        boolean resize = desiredWidth() != getMeasuredWidth();
         if (gold != this.gold) { this.gold = gold; applyColors(); }
         setContentDescription(labelText + " " + digitText);
         if (resize) requestLayout();
@@ -66,10 +67,14 @@ public class IqamaBubble extends View {
 
     private boolean rtl() { return getLayoutDirection() == LAYOUT_DIRECTION_RTL; }
 
+    private int desiredWidth() {
+        float content = label.measureText(labelText) + (digitText.isEmpty() ? 0 : GAP * dp + digits.measureText(digitText));
+        return (int) Math.ceil((ARROW + PAD * 2) * dp + content);
+    }
+
     @Override
     protected void onMeasure(int w, int h) {
-        float content = label.measureText(labelText) + (digitText.isEmpty() ? 0 : GAP * dp + digits.measureText(digitText));
-        setMeasuredDimension((int) Math.ceil((ARROW + PAD * 2) * dp + content), (int) (HEIGHT * dp));
+        setMeasuredDimension(desiredWidth(), (int) (HEIGHT * dp));
     }
 
     @Override

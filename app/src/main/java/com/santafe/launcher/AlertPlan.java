@@ -36,4 +36,18 @@ public final class AlertPlan {
         }
         return best;
     }
+
+    /**
+     * مؤقت الإقامة: إن كنا بين أذان صلاة وإقامتها (أو في الدقيقة بعد الإقامة) يعيد {رقم الصلاة، المتبقي بالملّي}،
+     * والمتبقي سالب أو صفر يعني «أقيمت الصلاة». وإلا null.
+     */
+    public static long[] iqamaWindow(long now, long[] today, int[] iqamaMinutes) {
+        if (today == null) return null;
+        for (int k : PrayerTimes.PRAYERS) {
+            if (iqamaMinutes[k] <= 0) continue;
+            long iq = today[k] + iqamaMinutes[k] * 60_000L;
+            if (now >= today[k] && now < iq + 60_000L) return new long[]{k, iq - now};
+        }
+        return null;
+    }
 }

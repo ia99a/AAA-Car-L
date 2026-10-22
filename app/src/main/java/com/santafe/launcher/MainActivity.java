@@ -281,9 +281,14 @@ public class MainActivity extends Activity {
         lastSpeed = null;
     }
 
-    /** التاريخ يتغيّر مرة في اليوم؛ نعيد حسابه فقط إن تغيّر */
+    private int dateDay = -1;
+
+    /** التاريخ يتغيّر مرة في اليوم؛ لا نعيد تنسيقه إلا إذا تغيّر اليوم */
     private void refreshDate() {
         if (clockDate.getVisibility() != View.VISIBLE) return;
+        int day = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_YEAR);
+        if (day == dateDay && lastDate != null) return;
+        dateDay = day;
         String d = Looks.dateText(this, System.currentTimeMillis());
         if (!d.equals(lastDate)) { lastDate = d; clockDate.setText(d); }
     }
@@ -415,11 +420,9 @@ public class MainActivity extends Activity {
         ui.removeCallbacks(iqamaTick);
         if (todayTimes == null || prayerItem == null || !Home.shown(this, Home.IQAMA)) { hideBubble(); return; }
         long t = System.currentTimeMillis();
-        for (int k : PrayerTimes.PRAYERS) {
-            if (PrayerTimes.IQAMA[k] <= 0) continue;
-            long iq = todayTimes[k] + PrayerTimes.IQAMA[k] * 60_000L;
-            if (t < todayTimes[k] || t >= iq + 60_000L) continue;
-            long left = iq - t;
+        long[] w = AlertPlan.iqamaWindow(t, todayTimes, PrayerTimes.IQAMA);
+        if (w != null) {
+            long left = w[1];
             if (left > 0) {
                 long sec = (left + 999) / 1000;
                 bubble.set(getString(R.string.iq_in), mmss(sec), sec < 60);
@@ -433,11 +436,15 @@ public class MainActivity extends Activity {
         hideBubble();
     }
 
+    private java.text.NumberFormat twoDigits;
+
     private String mmss(long sec) {
-        java.text.NumberFormat nf = java.text.NumberFormat.getInstance(Lang.isArabic(this) ? new Locale("ar", "SA") : Locale.ENGLISH);
-        nf.setMinimumIntegerDigits(2);
-        nf.setGroupingUsed(false);
-        return nf.format(sec / 60) + ":" + nf.format(sec % 60);
+        if (twoDigits == null) { // يُنشأ مرة واحدة (اللغة ثابتة طوال عمر الشاشة)
+            twoDigits = java.text.NumberFormat.getInstance(Lang.isArabic(this) ? new Locale("ar", "SA") : Locale.ENGLISH);
+            twoDigits.setMinimumIntegerDigits(2);
+            twoDigits.setGroupingUsed(false);
+        }
+        return twoDigits.format(sec / 60) + ":" + twoDigits.format(sec % 60);
     }
 
     private void showBubble() {
@@ -458,7 +465,11 @@ public class MainActivity extends Activity {
 
     /** على حافة الشريط اليسار، في مستوى أداة الصلاة */
     private void placeBubble() {
-        if (prayerItem == null || prayerItem.getHeight() == 0) { ui.post(this::placeBubble); return; }
+        if (prayerItem == null) return;
+        if (prayerItem.getHeight() == 0) { // لم يُرسم الشريط بعد: نعيد المحاولة بعد أول رسم
+            if (prayerItem.isAttachedToWindow()) prayerItem.post(this::placeBubble);
+            return;
+        }
         View root = findViewById(R.id.root), rail = findViewById(R.id.rail);
         int[] r = new int[2], a = new int[2], rl = new int[2];
         root.getLocationInWindow(r);

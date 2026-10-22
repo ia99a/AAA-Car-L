@@ -243,7 +243,10 @@ final class LiveMap implements LocationListener {
         if (lm != null) try { lm.removeUpdates(this); } catch (Exception ignored) { }
     }
 
+    private boolean destroyed;
+
     void destroy() {
+        destroyed = true;
         ui.removeCallbacks(retry);
         stop();
         net.shutdownNow();
@@ -330,6 +333,7 @@ final class LiveMap implements LocationListener {
             try { got = fetch(la, lo); } catch (Exception ignored) { }
             List<Hazards.Poi> result = got;
             ui.post(() -> {
+                if (destroyed) return; // أُغلقت الشاشة أثناء التحميل
                 fetching = false;
                 if (result == null) return; // بلا إنترنت: نحاول بعد دقيقة
                 fetchLat = la; fetchLng = lo;
