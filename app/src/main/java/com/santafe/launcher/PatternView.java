@@ -3,48 +3,45 @@ package com.santafe.launcher;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.BitmapShader;
 import android.graphics.Canvas;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
 import android.graphics.RadialGradient;
 import android.graphics.Shader;
 import android.util.AttributeSet;
 import android.view.View;
 
 /**
- * خلفية النقش: بلاطة نقش نظيفة (tools/pattern_*.py) تتكرر بلا فواصل، بلونين داكنين من الإعدادات،
- * مع تعتيم خفيف للأطراف. ترسم بأي دقة دون فقدان الحدة لأن البلاطة أعلى دقة من الشاشة.
+ * خلفية النقش: الصورة الأصلية نفسها بنعومتها (tools/pattern_soft.py أزال فقط اختلاف الإضاءة)،
+ * تُلوَّن بلونين داكنين من الإعدادات: الطرف الداكن للنقش، والفاتح للأرضية، ثم تعتيم ناعم للأطراف.
  */
 public class PatternView extends View {
 
-    /** المفتاح، اسم اللون، لون الخلفية، لون النقش */
     static final String[] KEYS = {"charcoal", "navy", "green", "burgundy", "bronze", "gold", "graphite"};
     static final int[] NAMES = {R.string.bg_charcoal, R.string.bg_navy, R.string.bg_green, R.string.bg_burgundy,
             R.string.bg_bronze, R.string.bg_gold, R.string.bg_graphite};
+    /** {لون النقش، لون الأرضية}. الفحمي يطابق الصورة الأصلية */
     static final int[][] COLORS = {
-            {0xFF232427, 0xFF151618}, {0xFF16203A, 0xFF0B1222}, {0xFF0F2A1F, 0xFF07170F}, {0xFF2C1216, 0xFF1A090C},
-            {0xFF2B2218, 0xFF18120B}, {0xFF0E0E0F, 0xFF2E2616}, {0xFF23282F, 0xFF15191E},
+            {0xFF191919, 0xFF2D2D2E}, {0xFF0C1324, 0xFF1C2947}, {0xFF08160F, 0xFF173729}, {0xFF170A0D, 0xFF3B161C},
+            {0xFF15110B, 0xFF392D1D}, {0xFF3B2F19, 0xFF0E0E0F}, {0xFF131519, 0xFF292E36},
     };
 
-    private static Bitmap mask; // مشتركة بين الشاشات، تُحمَّل مرة واحدة
-    private final Paint motif = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+    private static Bitmap image; // مشتركة، تُحمَّل مرة واحدة
+    private final Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG | Paint.DITHER_FLAG);
     private final Paint shade = new Paint();
     private final Matrix matrix = new Matrix();
-    private int bg = COLORS[0][0];
 
     public PatternView(Context c) { this(c, null); }
 
     public PatternView(Context c, AttributeSet a) {
         super(c, a);
-        if (mask == null) {
+        if (image == null) {
             BitmapFactory.Options o = new BitmapFactory.Options();
             o.inScaled = false;
-            mask = BitmapFactory.decodeResource(c.getResources(), R.drawable.pattern_mask, o);
+            image = BitmapFactory.decodeResource(c.getResources(), R.drawable.pattern_soft, o);
         }
-        if (mask != null) motif.setShader(new BitmapShader(mask, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT));
         setPalette(0);
     }
 
@@ -58,29 +55,37 @@ public class PatternView extends View {
         if (i >= 0 && i < KEYS.length) Lang.prefs(c).edit().putString("bg_color", KEYS[i]).apply();
     }
 
+    /** درجة الرمادي t (0..255) تصير: لون النقش + t × (لون الأرضية − لون النقش) */
     void setPalette(int i) {
         if (i < 0 || i >= COLORS.length) i = 0;
-        bg = COLORS[i][0];
-        motif.setColorFilter(new PorterDuffColorFilter(COLORS[i][1], PorterDuff.Mode.SRC_IN));
+        int c0 = COLORS[i][0], c1 = COLORS[i][1];
+        float[] m = new float[20];
+        int[] sh = {16, 8, 0};
+        for (int ch = 0; ch < 3; ch++) {
+            int a = (c0 >> sh[ch]) & 0xFF, b = (c1 >> sh[ch]) & 0xFF;
+            m[ch * 5] = (b - a) / 255f; // من القناة الحمراء (الصورة رمادية فكل القنوات متساوية)
+            m[ch * 5 + 4] = a;
+        }
+        m[18] = 1f;
+        paint.setColorFilter(new ColorMatrixColorFilter(new ColorMatrix(m)));
         invalidate();
     }
 
     @Override
     protected void onSizeChanged(int w, int h, int ow, int oh) {
-        if (mask == null || h == 0) return;
-        // ارتفاع التكرار حوالي نصف الشاشة تقريبًا، كما في الصورة الأصلية
-        float s = h * 0.46f / mask.getHeight();
+        if (image == null || w == 0 || h == 0) return;
+        // ملء الشاشة مع الحفاظ على النسبة (قص بسيط من الأطراف)
+        float s = Math.max(w / (float) image.getWidth(), h / (float) image.getHeight());
         matrix.setScale(s, s);
-        matrix.postTranslate((w - mask.getWidth() * s) / 2f, (h - mask.getHeight() * s) / 2f);
-        motif.getShader().setLocalMatrix(matrix);
+        matrix.postTranslate((w - image.getWidth() * s) / 2f, (h - image.getHeight() * s) / 2f);
         shade.setShader(new RadialGradient(w * 0.5f, h * 0.42f, Math.max(w, h) * 0.62f,
                 new int[]{0x00000000, 0x00000000, 0x80000000}, new float[]{0f, 0.45f, 1f}, Shader.TileMode.CLAMP));
     }
 
     @Override
     protected void onDraw(Canvas c) {
-        c.drawColor(bg);
-        if (mask != null) c.drawPaint(motif);
+        c.drawColor(COLORS[0][1]);
+        if (image != null) c.drawBitmap(image, matrix, paint);
         c.drawPaint(shade);
     }
 }

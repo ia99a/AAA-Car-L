@@ -139,4 +139,8 @@
     <string name="webview_ok">Version %1$s · The map and video use it</string>
     <string name="webview_old">Version %1$s is old · Tap to update it</string>
     <string name="webview_unknown">Version unknown · Tap to open it in the store</string>
+    <string name="nav_card">Card</string>
+    <string name="nav_icon">Icon only</string>
+    <string name="nav_live">Live map</string>
+    <string name="nav_hidden">Hide</string>
 </resources>

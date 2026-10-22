@@ -265,7 +265,7 @@ public class SettingsActivity extends Activity {
         for (int i = 0; i < Home.ITEMS.length; i++) {
             final String item = Home.ITEMS[i];
             TextView c = chip(getString(Home.NAMES[i]), Home.shown(this, item), 40, true);
-            android.widget.LinearLayout row = i < 3 ? r1 : r2;
+            android.widget.LinearLayout row = i < 2 ? r1 : r2;
             if (row.getChildCount() > 0) ((android.widget.LinearLayout.LayoutParams) c.getLayoutParams()).setMarginStart((int) (6 * dp));
             c.setOnClickListener(v -> {
                 boolean on = !Home.shown(this, item);
@@ -273,6 +273,25 @@ public class SettingsActivity extends Activity {
                 v.setSelected(on);
             });
             row.addView(c);
+        }
+        buildNavModes(R.id.nav_modes_maps, Home.MAPS);
+        buildNavModes(R.id.nav_modes_hudhud, Home.HUDHUD);
+    }
+
+    /** خرائط قوقل أو هدهد: أربعة أوضاع، واحد منها مختار */
+    private void buildNavModes(int containerId, String app) {
+        android.widget.LinearLayout box = findViewById(containerId);
+        float dp = getResources().getDisplayMetrics().density;
+        String cur = Home.navMode(this, app);
+        for (int i = 0; i < Home.NAV_MODES.length; i++) {
+            final String mode = Home.NAV_MODES[i];
+            TextView c = chip(getString(Home.NAV_MODE_NAMES[i]), mode.equals(cur), 38, false);
+            if (i > 0) ((android.widget.LinearLayout.LayoutParams) c.getLayoutParams()).setMarginStart((int) (6 * dp));
+            c.setOnClickListener(v -> {
+                Home.setNavMode(this, app, mode);
+                for (int k = 0; k < box.getChildCount(); k++) box.getChildAt(k).setSelected(box.getChildAt(k) == v);
+            });
+            box.addView(c);
         }
     }
 

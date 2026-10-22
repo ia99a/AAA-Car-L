@@ -50,11 +50,13 @@ final class LiveMap implements LocationListener {
         void onSpeed(double kmh, boolean moving);
         /** reason == null: الخريطة تعمل */
         void onMapStatus(String reason);
+        /** كل موقع جديد (للخرائط المصغّرة في بطاقتي قوقل وهدهد) */
+        void onPosition(double lat, double lng, double heading);
     }
 
     /** أصل افتراضي لملفات الصفحة (نفس النطاق الذي تستخدمه مكتبة أندرويد WebViewAssetLoader) */
     static final String ORIGIN_HOST = "appassets.androidplatform.net";
-    private static final String PAGE = "https://" + ORIGIN_HOST + "/map/index.html";
+    static final String PAGE = "https://" + ORIGIN_HOST + "/map/index.html";
 
     private static final String OVERPASS = "https://overpass-api.de/api/interpreter";
     private static final double REFETCH_METERS = 2000, FETCH_RADIUS = 4000;
@@ -110,7 +112,7 @@ final class LiveMap implements LocationListener {
                 Uri u = r.getUrl();
                 String host = u.getHost() == null ? "" : u.getHost().toLowerCase(Locale.ROOT);
                 if (!"https".equals(u.getScheme())) return blocked();
-                if (ORIGIN_HOST.equals(host)) return asset(u.getPath());
+                if (ORIGIN_HOST.equals(host)) return asset(act, u.getPath());
                 return isTileHost(host) ? null : blocked();
             }
 
@@ -170,13 +172,13 @@ final class LiveMap implements LocationListener {
     }
 
     /** ملفات الصفحة من مجلد map داخل التطبيق فقط */
-    private WebResourceResponse asset(String path) {
+    static WebResourceResponse asset(android.content.Context c, String path) {
         if (path == null || !path.startsWith("/map/") || path.contains("..")) return blocked();
         String mime = path.endsWith(".html") ? "text/html" : path.endsWith(".js") ? "application/javascript"
                 : path.endsWith(".css") ? "text/css" : path.endsWith(".png") ? "image/png" : null;
         if (mime == null) return blocked();
         try {
-            return new WebResourceResponse(mime, "utf-8", act.getAssets().open(path.substring(1)));
+            return new WebResourceResponse(mime, "utf-8", c.getAssets().open(path.substring(1)));
         } catch (java.io.IOException e) {
             return blocked();
         }
@@ -254,6 +256,7 @@ final class LiveMap implements LocationListener {
         last = loc;
         double kmh = loc.hasSpeed() ? loc.getSpeed() * 3.6 : 0;
         listener.onSpeed(kmh, kmh >= MOVING_KMH);
+        listener.onPosition(loc.getLatitude(), loc.getLongitude(), heading);
         if (pageReady) pushPosition();
         maybeFetch();
         checkAlerts(kmh);

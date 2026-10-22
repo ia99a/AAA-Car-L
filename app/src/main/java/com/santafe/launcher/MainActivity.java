@@ -37,6 +37,7 @@ public class MainActivity extends Activity {
     static final int DOCK_SLOTS = 5;
 
     private PatternView backdrop;
+    private MiniMap miniMaps, miniHud;
     private TextView mapStatus;
     private String createdStructure;
     private View cardMaps, cardHudhud;
@@ -94,6 +95,10 @@ public class MainActivity extends Activity {
                     "https://play.google.com/store/search?q=Hudhud%20maps&c=apps");
         });
 
+        // خرائط مصغّرة حية داخل البطاقتين إن اختيرت (وإلا نحذف WebView من البطاقة فلا يستهلك ذاكرة)
+        miniMaps = setupMini(cardMaps, Home.MAPS, "light");
+        miniHud = setupMini(cardHudhud, Home.HUDHUD, "dark");
+
         // زر «الإعدادات» ثابت في أسفل شريط السائق: اللغة، البار السفلي، الأدوات
         View edit = findViewById(R.id.rail_edit);
         ImageView editIcon = edit.findViewById(R.id.rail_icon);
@@ -131,6 +136,11 @@ public class MainActivity extends Activity {
                         if (video != null) video.setMoving(moving);
                     }
 
+                    @Override public void onPosition(double lat, double lng, double heading) {
+                        if (miniMaps != null) miniMaps.setPos(lat, lng, heading);
+                        if (miniHud != null) miniHud.setPos(lat, lng, heading);
+                    }
+
                     @Override public void onMapStatus(String reason) {
                         mapStatus.setVisibility(reason == null ? View.GONE : View.VISIBLE);
                         if (reason != null) mapStatus.setText(getString(R.string.map_err, reason));
@@ -165,6 +175,8 @@ public class MainActivity extends Activity {
         buildRail();
         ui.post(ticker);
         liveMap.start();
+        if (miniMaps != null) miniMaps.resume();
+        if (miniHud != null) miniHud.resume();
         PrayerAlerts.schedule(this);
         if (!introPlayed) { introPlayed = true; playIntro(); }
     }
@@ -174,7 +186,40 @@ public class MainActivity extends Activity {
         super.onPause();
         ui.removeCallbacks(ticker);
         liveMap.stop();
+        if (miniMaps != null) miniMaps.pause();
+        if (miniHud != null) miniHud.pause();
         if (video != null) video.pause();
+    }
+
+    private MiniMap setupMini(View card, String app, String style) {
+        android.view.ViewGroup frame = card.findViewById(R.id.nav_map);
+        android.webkit.WebView web = card.findViewById(R.id.nav_map_web);
+        if (!Home.LIVE.equals(Home.navMode(this, app))) { frame.removeView(web); return null; }
+        frame.setClipToOutline(true);
+        card.findViewById(R.id.nav_map_tap).setOnClickListener(v -> card.performClick());
+        return new MiniMap(this, web, style);
+    }
+
+    /** بطاقة خرائط قوقل أو هدهد بأحد أربعة أوضاع: بطاقة، أيقونة فقط، خريطة حية، مخفية */
+    private void applyNavMode(View card, String mode) {
+        float dp = getResources().getDisplayMetrics().density;
+        boolean hidden = Home.HIDDEN.equals(mode), icon = Home.ICON.equals(mode), live = Home.LIVE.equals(mode);
+        card.setVisibility(hidden ? View.GONE : View.VISIBLE);
+        card.findViewById(R.id.nav_map).setVisibility(live ? View.VISIBLE : View.GONE);
+        int full = icon ? View.GONE : View.VISIBLE;
+        card.findViewById(R.id.nav_texts).setVisibility(full);
+        card.findViewById(R.id.nav_bar).setVisibility(full);
+        card.findViewById(R.id.nav_action).setVisibility(full);
+        android.view.ViewGroup.LayoutParams lp = card.getLayoutParams();
+        lp.width = icon ? android.view.ViewGroup.LayoutParams.WRAP_CONTENT : (int) ((live ? 300 : 270) * dp);
+        card.setLayoutParams(lp);
+        View ic = card.findViewById(R.id.nav_icon);
+        android.view.ViewGroup.LayoutParams il = ic.getLayoutParams();
+        il.width = il.height = (int) ((icon ? 56 : 36) * dp);
+        ic.setLayoutParams(il);
+        int pad = (int) ((icon ? 10 : 14) * dp);
+        card.setPadding(pad, icon ? pad : (int) (12 * dp), pad, icon ? pad : (int) (11 * dp));
+        card.setContentDescription(((TextView) card.findViewById(R.id.nav_title)).getText());
     }
 
     /** إظهار عناصر الرئيسية أو إخفاؤها حسب الإعدادات، ولون النقش */
@@ -182,8 +227,8 @@ public class MainActivity extends Activity {
         backdrop.setPalette(PatternView.current(this));
         findViewById(R.id.top_card).setVisibility(Home.shown(this, Home.CLOCK) ? View.VISIBLE : View.INVISIBLE);
         if (!Home.shown(this, Home.SPEED)) speedView.setVisibility(View.GONE);
-        cardMaps.setVisibility(Home.shown(this, Home.MAPS) ? View.VISIBLE : View.GONE);
-        cardHudhud.setVisibility(Home.shown(this, Home.HUDHUD) ? View.VISIBLE : View.GONE);
+        applyNavMode(cardMaps, Home.navMode(this, Home.MAPS));
+        applyNavMode(cardHudhud, Home.navMode(this, Home.HUDHUD));
         dock.setVisibility(Home.shown(this, Home.DOCK) ? View.VISIBLE : View.GONE);
         // بطاقة خرائط قوقل لها هامش جهة هدهد؛ نزيله إن أُخفي هدهد
         ((android.view.ViewGroup.MarginLayoutParams) cardMaps.getLayoutParams()).setMarginEnd(
@@ -198,6 +243,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         liveMap.destroy();
+        if (miniMaps != null) miniMaps.destroy();
+        if (miniHud != null) miniHud.destroy();
         if (video != null) video.destroy();
         super.onDestroy();
     }

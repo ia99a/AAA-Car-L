@@ -143,4 +143,8 @@
     <string name="webview_ok">الإصدار %1$s · الخريطة والفيديو يعتمدان عليه</string>
     <string name="webview_old">الإصدار %1$s قديم · اضغط لتحديثه من المتجر</string>
     <string name="webview_unknown">لم يُعرف الإصدار · اضغط لفتحه في المتجر</string>
+    <string name="nav_card">بطاقة</string>
+    <string name="nav_icon">أيقونة فقط</string>
+    <string name="nav_live">خريطة حية</string>
+    <string name="nav_hidden">إخفاء</string>
 </resources>
