@@ -36,7 +36,9 @@ public class MainActivity extends Activity {
     static final String BRAVE_PKG = "com.brave.browser";
     static final int DOCK_SLOTS = 5;
 
-    private MapBackdropView backdrop;
+    private PatternView backdrop;
+    private TextView mapStatus;
+    private String createdStructure;
     private View cardMaps, cardHudhud;
     private VideoPanel video;
     private LiveMap liveMap;
@@ -70,6 +72,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         prefs = getSharedPreferences("launcher", MODE_PRIVATE);
         createdLang = Lang.get(this);
+        createdStructure = Home.structure(this);
 
         backdrop = findViewById(R.id.backdrop);
         cardMaps = findViewById(R.id.card_maps);
@@ -99,26 +102,41 @@ public class MainActivity extends Activity {
         edit.setContentDescription(getString(R.string.settings_title));
         edit.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
 
-        // لوحة الفيديو المثبتة يسار الشاشة
+        // لوحة الفيديو المثبتة يسار الشاشة (لا تُنشأ أصلًا إن أُخفيت من الإعدادات، فلا تستهلك إنترنت)
         View card = findViewById(R.id.card_video);
-        View slot = card.findViewById(R.id.video_slot);
-        slot.setClipToOutline(true);
-        video = new VideoPanel(this, card.findViewById(R.id.video_web), (android.view.ViewGroup) slot,
-                findViewById(R.id.video_full), card.findViewById(R.id.video_drive_cover),
-                card.findViewById(R.id.video_toggle_label));
-        card.findViewById(R.id.video_toggle).setOnClickListener(v -> video.toggle());
-        findViewById(R.id.video_full_close).setOnClickListener(v -> video.toggle());
-        card.findViewById(R.id.video_home).setOnClickListener(v -> video.home());
-        card.findViewById(R.id.video_brave).setOnClickListener(v -> openBrave());
+        if (Home.shown(this, Home.VIDEO)) {
+            View slot = card.findViewById(R.id.video_slot);
+            slot.setClipToOutline(true);
+            video = new VideoPanel(this, card.findViewById(R.id.video_web), (android.view.ViewGroup) slot,
+                    findViewById(R.id.video_full), card.findViewById(R.id.video_drive_cover),
+                    card.findViewById(R.id.video_toggle_label));
+            video.setStatusView(card.findViewById(R.id.video_status));
+            card.findViewById(R.id.video_toggle).setOnClickListener(v -> video.toggle());
+            findViewById(R.id.video_full_close).setOnClickListener(v -> video.toggle());
+            card.findViewById(R.id.video_home).setOnClickListener(v -> video.home());
+            card.findViewById(R.id.video_brave).setOnClickListener(v -> openBrave());
+        } else {
+            card.setVisibility(View.GONE);
+            ((android.view.ViewGroup) card.findViewById(R.id.video_slot)).removeAllViews(); // يحرّر WebView اللوحة
+        }
 
         // الخريطة الحية خلف الشاشة، مع تنبيهات الكاميرات والمطبات
         View alert = findViewById(R.id.alert_box);
+        mapStatus = findViewById(R.id.map_status);
         liveMap = new LiveMap(this, findViewById(R.id.map_web), backdrop, alert,
-                findViewById(R.id.alert_text), findViewById(R.id.alert_dist), (kmh, moving) -> {
-                    speedView.setVisibility(View.VISIBLE);
-                    speedView.setText(Lang.speed(this, kmh));
-                    video.setMoving(moving);
+                findViewById(R.id.alert_text), findViewById(R.id.alert_dist), Home.mapBackground(this), new LiveMap.Listener() {
+                    @Override public void onSpeed(double kmh, boolean moving) {
+                        if (Home.shown(MainActivity.this, Home.SPEED)) speedView.setVisibility(View.VISIBLE);
+                        speedView.setText(Lang.speed(MainActivity.this, kmh));
+                        if (video != null) video.setMoving(moving);
+                    }
+
+                    @Override public void onMapStatus(String reason) {
+                        mapStatus.setVisibility(reason == null ? View.GONE : View.VISIBLE);
+                        if (reason != null) mapStatus.setText(getString(R.string.map_err, reason));
+                    }
                 });
+        mapStatus.setOnClickListener(v -> { mapStatus.setVisibility(View.GONE); liveMap.retryNow(); });
         // أول تشغيل: نطلب الموقع (للخريطة والتنبيهات) والإشعارات (لتنبيهات الصلاة على أندرويد ١٣+) معًا
         if (!prefs.getBoolean("asked_location", false)) {
             prefs.edit().putBoolean("asked_location", true).apply();
@@ -138,15 +156,14 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         // تغيّرت اللغة من الإعدادات: نعيد بناء الشاشة باللغة الجديدة
-        if (!Lang.get(this).equals(createdLang)) { recreate(); return; }
+        if (!Lang.get(this).equals(createdLang) || !Home.structure(this).equals(createdStructure)) { recreate(); return; }
         hudhudPkg = findHudhud();
         bindCard(cardMaps, MAPS_PKG, R.string.maps_sub);
         bindCard(cardHudhud, hudhudPkg, R.string.hudhud_sub);
-        dock.setVisibility(SettingsActivity.dockVisible(this) ? View.VISIBLE : View.GONE);
+        applyHomeItems();
         buildDock();
         buildRail();
         ui.post(ticker);
-        backdrop.start();
         liveMap.start();
         PrayerAlerts.schedule(this);
         if (!introPlayed) { introPlayed = true; playIntro(); }
@@ -156,19 +173,32 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
         ui.removeCallbacks(ticker);
-        backdrop.stop();
         liveMap.stop();
-        video.pause();
+        if (video != null) video.pause();
+    }
+
+    /** إظهار عناصر الرئيسية أو إخفاؤها حسب الإعدادات، ولون النقش */
+    private void applyHomeItems() {
+        backdrop.setPalette(PatternView.current(this));
+        findViewById(R.id.top_card).setVisibility(Home.shown(this, Home.CLOCK) ? View.VISIBLE : View.INVISIBLE);
+        if (!Home.shown(this, Home.SPEED)) speedView.setVisibility(View.GONE);
+        cardMaps.setVisibility(Home.shown(this, Home.MAPS) ? View.VISIBLE : View.GONE);
+        cardHudhud.setVisibility(Home.shown(this, Home.HUDHUD) ? View.VISIBLE : View.GONE);
+        dock.setVisibility(Home.shown(this, Home.DOCK) ? View.VISIBLE : View.GONE);
+        // بطاقة خرائط قوقل لها هامش جهة هدهد؛ نزيله إن أُخفي هدهد
+        ((android.view.ViewGroup.MarginLayoutParams) cardMaps.getLayoutParams()).setMarginEnd(
+                Home.shown(this, Home.HUDHUD) ? (int) (10 * getResources().getDisplayMetrics().density) : 0);
+        cardMaps.requestLayout();
     }
 
     /** زر الرجوع يصغّر الفيديو أو يرجع صفحة فيه؛ والمشغّل نفسه لا يُغلق */
     @Override
-    public void onBackPressed() { video.back(); }
+    public void onBackPressed() { if (video != null) video.back(); }
 
     @Override
     protected void onDestroy() {
         liveMap.destroy();
-        video.destroy();
+        if (video != null) video.destroy();
         super.onDestroy();
     }
 
@@ -343,23 +373,27 @@ public class MainActivity extends Activity {
 
     // ───────── Brave ─────────
 
-    private boolean braveInstalled() {
-        return getPackageManager().getLaunchIntentForPackage(BRAVE_PKG) != null;
+    /** Brave المثبت: العادي أولًا، ثم Beta وNightly */
+    private String bravePkg() {
+        for (String p : new String[]{BRAVE_PKG, BRAVE_PKG + "_beta", BRAVE_PKG + "_nightly"})
+            if (getPackageManager().getLaunchIntentForPackage(p) != null) return p;
+        return null;
     }
 
     /** يفتح Brave نفسه بملء الشاشة (للتصفح الكامل بلا إعلانات) */
     private void openBrave() {
-        if (!braveInstalled()) {
+        String pkg = bravePkg();
+        if (pkg == null) {
             openOrInstall(null, "market://details?id=" + BRAVE_PKG,
                     "https://play.google.com/store/apps/details?id=" + BRAVE_PKG);
             return;
         }
-        Intent i = getPackageManager().getLaunchIntentForPackage(BRAVE_PKG);
+        Intent launch = getPackageManager().getLaunchIntentForPackage(pkg);
         // نفتح الصفحة الحالية من لوحة الفيديو في Brave إن وُجدت
-        String u = video.url();
-        if (u != null && u.startsWith("https://")) i = new Intent(Intent.ACTION_VIEW, Uri.parse(u)).setPackage(BRAVE_PKG);
-        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        if (!tryStart(i)) tryStart(getPackageManager().getLaunchIntentForPackage(BRAVE_PKG));
+        String u = video == null ? null : video.url();
+        if (u != null && u.startsWith("https://")
+                && tryStart(new Intent(Intent.ACTION_VIEW, Uri.parse(u)).setPackage(pkg))) return;
+        if (!tryStart(launch)) Toast.makeText(this, R.string.brave_failed, Toast.LENGTH_LONG).show();
     }
 
     // ───────── بار الأيقونات ─────────

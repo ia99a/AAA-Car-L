@@ -3,6 +3,7 @@ package com.santafe.launcher;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.LayoutInflater;
@@ -61,10 +62,6 @@ public class SettingsActivity extends Activity {
         return "hudhud".equals(Lang.prefs(c).getString("nav_app", "maps")) ? "hudhud" : "maps";
     }
 
-    /** هل البار السفلي ظاهر؟ ظاهر افتراضيًا */
-    static boolean dockVisible(Context c) {
-        return Lang.prefs(c).getBoolean("show_dock", true);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,16 +130,10 @@ public class SettingsActivity extends Activity {
             if (sel != null) sel.requestRectangleOnScreen(new android.graphics.Rect(0, 0, sel.getWidth(), sel.getHeight()), true);
         });
 
-        // البار السفلي
-        Switch sw = findViewById(R.id.switch_dock);
-        sw.setChecked(dockVisible(this));
-        findViewById(R.id.row_dock).setOnClickListener(v -> {
-            boolean show = !dockVisible(this);
-            Lang.prefs(this).edit().putBoolean("show_dock", show).apply();
-            sw.setChecked(show);
-        });
+        buildHomeSection();
 
         findViewById(R.id.row_adblock).setOnClickListener(v -> AdBlock.setup(this));
+        bindWebView();
 
         findViewById(R.id.row_system).setOnClickListener(v -> {
             try { startActivity(new Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); }
@@ -208,6 +199,115 @@ public class SettingsActivity extends Activity {
     protected void onDestroy() {
         if (player != null) { try { player.release(); } catch (Exception ignored) { } player = null; }
         super.onDestroy();
+    }
+
+    // ───────── الشاشة الرئيسية ─────────
+
+    private TextView chip(CharSequence text, boolean sel, int heightDp, boolean fill) {
+        float dp = getResources().getDisplayMetrics().density;
+        TextView t = new TextView(this);
+        t.setText(text);
+        t.setTextColor(getColor(R.color.ink));
+        t.setTextSize(14);
+        t.setGravity(android.view.Gravity.CENTER);
+        t.setBackgroundResource(R.drawable.chip_bg);
+        t.setPadding((int) (12 * dp), 0, (int) (12 * dp), 0);
+        t.setSingleLine(true);
+        t.setClickable(true);
+        t.setFocusable(true);
+        t.setSelected(sel);
+        android.widget.LinearLayout.LayoutParams lp = new android.widget.LinearLayout.LayoutParams(
+                fill ? 0 : ViewGroup.LayoutParams.WRAP_CONTENT, (int) (heightDp * dp), fill ? 1f : 0f);
+        t.setLayoutParams(lp);
+        return t;
+    }
+
+    private void buildHomeSection() {
+        float dp = getResources().getDisplayMetrics().density;
+        // الخلفية
+        View bgMap = findViewById(R.id.bg_map), bgPat = findViewById(R.id.bg_pattern);
+        View colorsRow = findViewById(R.id.row_bg_colors);
+        Runnable paintBg = () -> {
+            boolean map = Home.mapBackground(this);
+            bgMap.setSelected(map);
+            bgPat.setSelected(!map);
+            colorsRow.setAlpha(map ? 0.55f : 1f); // النقش يظهر خلف الخريطة حتى تتحمّل، فاللون مفيد في الحالتين
+        };
+        paintBg.run();
+        bgMap.setOnClickListener(v -> { Home.setMapBackground(this, true); paintBg.run(); });
+        bgPat.setOnClickListener(v -> { Home.setMapBackground(this, false); paintBg.run(); });
+
+        // ألوان النقش: دوائر صغيرة بلونَي كل نمط
+        android.widget.LinearLayout colors = findViewById(R.id.bg_colors);
+        for (int i = 0; i < PatternView.KEYS.length; i++) {
+            final int idx = i;
+            View sw = new View(this);
+            android.graphics.drawable.GradientDrawable d = new android.graphics.drawable.GradientDrawable(
+                    android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
+                    new int[]{PatternView.COLORS[i][0], PatternView.COLORS[i][1]});
+            d.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+            sw.setBackground(d);
+            sw.setContentDescription(getString(PatternView.NAMES[i]));
+            android.widget.LinearLayout.LayoutParams lp = new android.widget.LinearLayout.LayoutParams((int) (34 * dp), (int) (34 * dp));
+            lp.setMarginStart((int) (8 * dp));
+            sw.setLayoutParams(lp);
+            sw.setOnClickListener(v -> {
+                PatternView.save(this, idx);
+                paintColors(colors);
+                Toast.makeText(this, PatternView.NAMES[idx], Toast.LENGTH_SHORT).show();
+            });
+            colors.addView(sw);
+        }
+        paintColors(colors);
+
+        // عناصر الرئيسية: ستة أزرار في صفين، الضغط يُظهر العنصر أو يخفيه
+        android.widget.LinearLayout r1 = findViewById(R.id.home_items_1), r2 = findViewById(R.id.home_items_2);
+        for (int i = 0; i < Home.ITEMS.length; i++) {
+            final String item = Home.ITEMS[i];
+            TextView c = chip(getString(Home.NAMES[i]), Home.shown(this, item), 40, true);
+            android.widget.LinearLayout row = i < 3 ? r1 : r2;
+            if (row.getChildCount() > 0) ((android.widget.LinearLayout.LayoutParams) c.getLayoutParams()).setMarginStart((int) (6 * dp));
+            c.setOnClickListener(v -> {
+                boolean on = !Home.shown(this, item);
+                Home.setShown(this, item, on);
+                v.setSelected(on);
+            });
+            row.addView(c);
+        }
+    }
+
+    /** الدائرة المختارة بإطار برتقالي */
+    private void paintColors(android.widget.LinearLayout colors) {
+        int cur = PatternView.current(this);
+        float dp = getResources().getDisplayMetrics().density;
+        for (int k = 0; k < colors.getChildCount(); k++) {
+            android.graphics.drawable.GradientDrawable d = (android.graphics.drawable.GradientDrawable) colors.getChildAt(k).getBackground();
+            d.setStroke((int) ((k == cur ? 3 : 1) * dp), k == cur ? getColor(R.color.orange) : 0x33FFFFFF);
+        }
+    }
+
+    /** نسخة متصفح النظام (WebView): الخريطة والفيديو يعتمدان عليه، والقديم جدًا لا يشغّل يوتيوب */
+    private void bindWebView() {
+        TextView st = findViewById(R.id.webview_state);
+        String pkg = null, ver = null;
+        if (android.os.Build.VERSION.SDK_INT >= 26) {
+            android.content.pm.PackageInfo pi = android.webkit.WebView.getCurrentWebViewPackage();
+            if (pi != null) { pkg = pi.packageName; ver = pi.versionName; }
+        }
+        int major = 0;
+        try { if (ver != null) major = Integer.parseInt(ver.split("\\.")[0]); } catch (NumberFormatException ignored) { }
+        boolean old = major > 0 && major < 100;
+        st.setText(ver == null ? getString(R.string.webview_unknown)
+                : getString(old ? R.string.webview_old : R.string.webview_ok, ver));
+        st.setTextColor(getColor(old ? R.color.orange : R.color.ink_faint));
+        final String target = pkg != null ? pkg : "com.google.android.webview";
+        findViewById(R.id.row_webview).setOnClickListener(v -> {
+            try {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + target)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            } catch (Exception e) {
+                Toast.makeText(this, R.string.no_store, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void saveTools() {

@@ -40,11 +40,21 @@ import java.util.concurrent.Executors;
  * الخريطة الحية خلف الشاشة الرئيسية:
  * خريطة داكنة (OpenStreetMap عبر CARTO) تتبع موقعك من GPS السيارة،
  * وعليها كاميرات السرعة والمطبات من OpenStreetMap، مع تنبيه صوتي ومكتوب حين تقترب منها.
- * إن لم يُسمح بالموقع أو لم يتوفر إنترنت، تبقى الخلفية المرسومة القديمة ظاهرة.
+ * الصفحة تُخدم من أصل https افتراضي داخل التطبيق (لا file://)، والبلاطات من CARTO ثم Esri احتياطًا.
+ * إن تعذّر تحميل الخريطة تبقى خلفية النقش ظاهرة، ويظهر سبب واضح (لا إنترنت، تاريخ خاطئ، رفض الخادم...).
+ * في وضع خلفية النقش لا تُحمَّل الخريطة أصلًا، ويبقى GPS للسرعة وتنبيهات الكاميرات والمطبات.
  */
 final class LiveMap implements LocationListener {
 
-    interface Listener { void onSpeed(double kmh, boolean moving); }
+    interface Listener {
+        void onSpeed(double kmh, boolean moving);
+        /** reason == null: الخريطة تعمل */
+        void onMapStatus(String reason);
+    }
+
+    /** أصل افتراضي لملفات الصفحة (نفس النطاق الذي تستخدمه مكتبة أندرويد WebViewAssetLoader) */
+    static final String ORIGIN_HOST = "appassets.androidplatform.net";
+    private static final String PAGE = "https://" + ORIGIN_HOST + "/map/index.html";
 
     private static final String OVERPASS = "https://overpass-api.de/api/interpreter";
     private static final double REFETCH_METERS = 2000, FETCH_RADIUS = 4000;
@@ -62,7 +72,9 @@ final class LiveMap implements LocationListener {
     private final ExecutorService net = Executors.newSingleThreadExecutor();
     private LocationManager lm;
 
-    private boolean pageReady, shown;
+    private final boolean display;
+    private boolean pageReady, shown, failed;
+    private String lastError;
     private Location last;
     private double heading = -1;
     private volatile List<Hazards.Poi> pois = new ArrayList<>();
@@ -73,8 +85,9 @@ final class LiveMap implements LocationListener {
     private ToneGenerator tone;
 
     @SuppressLint("SetJavaScriptEnabled")
-    LiveMap(Activity act, WebView web, View fallback, View alertBox, TextView alertText, TextView alertDist, Listener l) {
-        this.act = act; this.web = web; this.fallback = fallback;
+    LiveMap(Activity act, WebView web, View fallback, View alertBox, TextView alertText, TextView alertDist,
+            boolean display, Listener l) {
+        this.act = act; this.web = web; this.fallback = fallback; this.display = display;
         this.alertBox = alertBox; this.alertText = alertText; this.alertDist = alertDist; this.listener = l;
 
         WebSettings s = web.getSettings();
@@ -89,15 +102,16 @@ final class LiveMap implements LocationListener {
         if (android.os.Build.VERSION.SDK_INT >= 26) s.setSafeBrowsingEnabled(true);
         web.setBackgroundColor(act.getColor(R.color.map_bg));
         web.setVisibility(View.INVISIBLE);
+        if (!display) return; // خلفية النقش: لا نحمّل الخريطة
         web.setWebViewClient(new WebViewClient() {
             @Override public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest r) { return true; } // لا تنقّل أبدًا
 
             @Override public WebResourceResponse shouldInterceptRequest(WebView v, WebResourceRequest r) {
                 Uri u = r.getUrl();
-                String scheme = u.getScheme(), host = u.getHost() == null ? "" : u.getHost();
-                boolean asset = "file".equals(scheme) && u.getPath() != null && u.getPath().startsWith("/android_asset/map/");
-                boolean tile = "https".equals(scheme) && host.endsWith(".basemaps.cartocdn.com");
-                return (asset || tile) ? null : blocked();
+                String host = u.getHost() == null ? "" : u.getHost().toLowerCase(Locale.ROOT);
+                if (!"https".equals(u.getScheme())) return blocked();
+                if (ORIGIN_HOST.equals(host)) return asset(u.getPath());
+                return isTileHost(host) ? null : blocked();
             }
 
             @Override public void onPageFinished(WebView v, String url) {
@@ -106,8 +120,86 @@ final class LiveMap implements LocationListener {
                 if (last != null) pushPosition();
                 pushPois();
             }
+
+            @Override public void onReceivedError(WebView v, WebResourceRequest r, android.webkit.WebResourceError e) {
+                if (android.os.Build.VERSION.SDK_INT >= 23)
+                    lastError = reasonFor(act, e.getErrorCode(), 0, String.valueOf(e.getDescription()));
+            }
+
+            @Override public void onReceivedHttpError(WebView v, WebResourceRequest r, WebResourceResponse resp) {
+                String h = r.getUrl().getHost();
+                if (h != null && isTileHost(h)) lastError = reasonFor(act, 0, resp.getStatusCode(), null);
+            }
+
+            @Override public void onReceivedSslError(WebView v, android.webkit.SslErrorHandler h, android.net.http.SslError e) {
+                lastError = act.getString(R.string.map_err_ssl);
+                h.cancel(); // لا نتجاوز أخطاء الشهادات أبدًا
+            }
         });
-        web.loadUrl("file:///android_asset/map/index.html");
+        // حالة البلاطات تصل عبر عنوان الصفحة: tiles:ok أو tiles:fail
+        web.setWebChromeClient(new android.webkit.WebChromeClient() {
+            @Override public void onReceivedTitle(WebView v, String title) {
+                if (title == null) return;
+                if (title.startsWith("tiles:ok")) {
+                    failed = false; lastError = null;
+                    listener.onMapStatus(null);
+                    reveal();
+                } else if (title.startsWith("tiles:fail")) {
+                    failed = true;
+                    listener.onMapStatus(lastError != null ? lastError : offlineReason());
+                    ui.removeCallbacks(retry);
+                    ui.postDelayed(retry, 60_000); // نحاول تلقائيًا كل دقيقة
+                }
+            }
+        });
+        web.loadUrl(PAGE);
+    }
+
+    private final Runnable retry = this::retryNow;
+
+    /** إعادة المحاولة (تلقائيًا كل دقيقة عند الفشل، أو بالضغط على رسالة الخطأ) */
+    void retryNow() {
+        ui.removeCallbacks(retry);
+        if (!display) return;
+        lastError = null;
+        if (pageReady) web.evaluateJavascript("retryTiles()", null); else web.loadUrl(PAGE);
+    }
+
+    static boolean isTileHost(String host) {
+        return host.endsWith(".basemaps.cartocdn.com") || host.equals("server.arcgisonline.com");
+    }
+
+    /** ملفات الصفحة من مجلد map داخل التطبيق فقط */
+    private WebResourceResponse asset(String path) {
+        if (path == null || !path.startsWith("/map/") || path.contains("..")) return blocked();
+        String mime = path.endsWith(".html") ? "text/html" : path.endsWith(".js") ? "application/javascript"
+                : path.endsWith(".css") ? "text/css" : path.endsWith(".png") ? "image/png" : null;
+        if (mime == null) return blocked();
+        try {
+            return new WebResourceResponse(mime, "utf-8", act.getAssets().open(path.substring(1)));
+        } catch (java.io.IOException e) {
+            return blocked();
+        }
+    }
+
+    private String offlineReason() {
+        android.net.ConnectivityManager cm = (android.net.ConnectivityManager) act.getSystemService(Activity.CONNECTIVITY_SERVICE);
+        android.net.NetworkInfo ni = cm == null ? null : cm.getActiveNetworkInfo();
+        return act.getString(ni == null || !ni.isConnected() ? R.string.map_err_offline : R.string.map_err_unknown);
+    }
+
+    /** سبب مفهوم للسائق من رمز الخطأ */
+    static String reasonFor(android.content.Context c, int code, int http, String desc) {
+        if (http == 401 || http == 403 || http == 429) return c.getString(R.string.map_err_refused, http);
+        if (http >= 400) return c.getString(R.string.map_err_server, http);
+        switch (code) {
+            case WebViewClient.ERROR_HOST_LOOKUP: return c.getString(R.string.map_err_dns);
+            case WebViewClient.ERROR_CONNECT:
+            case WebViewClient.ERROR_TIMEOUT:
+            case WebViewClient.ERROR_IO: return c.getString(R.string.map_err_connect);
+            case WebViewClient.ERROR_FAILED_SSL_HANDSHAKE: return c.getString(R.string.map_err_ssl);
+            default: return desc == null || desc.isEmpty() ? c.getString(R.string.map_err_unknown) : desc;
+        }
     }
 
     static WebResourceResponse blocked() {
@@ -122,6 +214,7 @@ final class LiveMap implements LocationListener {
     @SuppressLint("MissingPermission")
     void start() {
         web.onResume();
+        if (failed) retryNow();
         if (!hasPermission(act)) return;
         lm = (LocationManager) act.getSystemService(Activity.LOCATION_SERVICE);
         if (lm == null) return;
@@ -141,6 +234,7 @@ final class LiveMap implements LocationListener {
     }
 
     void destroy() {
+        ui.removeCallbacks(retry);
         stop();
         net.shutdownNow();
         if (tone != null) tone.release();
@@ -161,7 +255,6 @@ final class LiveMap implements LocationListener {
         double kmh = loc.hasSpeed() ? loc.getSpeed() * 3.6 : 0;
         listener.onSpeed(kmh, kmh >= MOVING_KMH);
         if (pageReady) pushPosition();
-        reveal();
         maybeFetch();
         checkAlerts(kmh);
     }
@@ -171,14 +264,15 @@ final class LiveMap implements LocationListener {
     @Override public void onProviderDisabled(String p) { }
 
     private void reveal() {
-        if (shown) return;
+        if (shown || !display) return;
         shown = true;
         web.setAlpha(0f);
         web.setVisibility(View.VISIBLE);
-        web.animate().alpha(1f).setDuration(700).withEndAction(() -> fallback.setVisibility(View.INVISIBLE)).start();
+        web.animate().alpha(1f).setDuration(700).start();
     }
 
     private void pushPosition() {
+        if (!display) return;
         web.evaluateJavascript(String.format(Locale.US, "setPos(%.6f,%.6f,%.1f)",
                 last.getLatitude(), last.getLongitude(), heading), null);
     }
@@ -191,7 +285,7 @@ final class LiveMap implements LocationListener {
     }
 
     private void pushPois() {
-        if (!pageReady) return;
+        if (!pageReady || !display) return;
         StringBuilder sb = new StringBuilder("setPois([");
         List<Hazards.Poi> list = pois;
         for (int i = 0; i < list.size(); i++) {
@@ -236,7 +330,7 @@ final class LiveMap implements LocationListener {
             c.setReadTimeout(25_000);
             c.setDoOutput(true);
             c.setRequestMethod("POST");
-            c.setRequestProperty("User-Agent", "AAA-Car-L/1.5 (car launcher)");
+            c.setRequestProperty("User-Agent", "AAA-Car-L/2.0 (car launcher)");
             c.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             try (OutputStream o = c.getOutputStream()) { o.write(("data=" + URLEncoder.encode(q, "UTF-8")).getBytes("UTF-8")); }
             if (c.getResponseCode() != 200) return null;

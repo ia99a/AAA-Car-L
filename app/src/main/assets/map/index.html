@@ -3,9 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<!-- لا سكربتات ولا اتصالات إلا من الصفحة نفسها، والصور (البلاطات) من CARTO فقط -->
+<!-- لا سكربتات إلا من ملفات الصفحة نفسها، والصور (البلاطات) من CARTO أو Esri فقط -->
 <meta http-equiv="Content-Security-Policy"
-      content="default-src 'none'; script-src 'self' file: 'unsafe-inline'; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: data: https://*.basemaps.cartocdn.com;">
+      content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.basemaps.cartocdn.com https://server.arcgisonline.com;">
+<meta name="referrer" content="origin">
 <link rel="stylesheet" href="leaflet.css">
 <style>
   html,body,#map{margin:0;height:100%;background:#191b1f}
@@ -22,55 +23,6 @@
 <body>
 <div id="map"></div>
 <script src="leaflet.js"></script>
-<script>
-// الخريطة الحية خلف الشاشة الرئيسية. التطبيق يرسل الموقع والمخاطر عبر setPos و setPois.
-var map = L.map('map', {zoomControl:false, attributionControl:true, zoomSnap:0.5, inertia:true})
-  .setView([24.7136, 46.6753], 16);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-  subdomains:'abcd', maxZoom:19,
-  attribution:'&copy; OpenStreetMap &copy; CARTO'
-}).addTo(map);
-
-// الخريطة مزاحة لتظهر سيارتك في الجزء الظاهر بين البطاقات، لا تحت الشريط
-var OFFSET_X = 0.18, OFFSET_Y = 0.10;
-
-var meIcon = L.divIcon({className:'', iconSize:[30,30], iconAnchor:[15,15],
-  html:'<svg class="me" id="meArrow" viewBox="0 0 30 30"><circle cx="15" cy="15" r="14" fill="rgba(59,125,221,.22)"/>'+
-       '<path d="M15 4 L23 24 L15 19.5 L7 24 Z" fill="#e4e6ea" stroke="#16181c" stroke-width="1.5" stroke-linejoin="round"/></svg>'});
-var me = null, follow = true, followTimer = null;
-
-map.on('dragstart zoomstart', function(e){
-  if (!e.hard) { follow = false; clearTimeout(followTimer); followTimer = setTimeout(function(){ follow = true; }, 10000); }
-});
-
-function centerOn(ll){
-  var size = map.getSize();
-  var p = map.project(ll, map.getZoom()).subtract([size.x*OFFSET_X, size.y*OFFSET_Y]);
-  map.panTo(map.unproject(p, map.getZoom()), {animate:true, duration:.8});
-}
-
-window.setPos = function(lat, lng, bearing){
-  var ll = L.latLng(lat, lng);
-  if (!me) me = L.marker(ll, {icon:meIcon, interactive:false, zIndexOffset:1000}).addTo(map);
-  else me.setLatLng(ll);
-  var a = document.getElementById('meArrow');
-  if (a && bearing >= 0) a.style.transform = 'rotate(' + bearing + 'deg)';
-  if (follow) centerOn(ll);
-};
-
-var CAM = '<svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11z"/></svg>';
-var BUMP = '<svg viewBox="0 0 24 24"><path d="M2 18h20v2H2zM4 17c0-4.4 3.6-8 8-8s8 3.6 8 8z"/></svg>';
-var poiLayer = L.layerGroup().addTo(map);
-
-// pois: [[lat, lng, kind], ...] حيث kind = 0 كاميرا، 1 مطب
-window.setPois = function(pois){
-  poiLayer.clearLayers();
-  for (var i = 0; i < pois.length; i++) {
-    var p = pois[i], cam = p[2] === 0;
-    L.marker([p[0], p[1]], {interactive:false, icon:L.divIcon({className:'', iconSize:[22,22], iconAnchor:[11,11],
-      html:'<div class="hz ' + (cam ? 'cam' : 'bump') + '">' + (cam ? CAM : BUMP) + '</div>'})}).addTo(poiLayer);
-  }
-};
-</script>
+<script src="app.js"></script>
 </body>
 </html>

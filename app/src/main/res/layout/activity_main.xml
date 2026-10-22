@@ -10,8 +10,8 @@
     android:background="@color/bg"
     android:clipChildren="false">
 
-    <!-- الخلفية المرسومة: تظهر حتى يصل أول موقع، أو دائمًا إن لم يُسمح بالموقع -->
-    <com.santafe.launcher.MapBackdropView
+    <!-- خلفية النقش: الخلفية المختارة، أو تظهر خلف الخريطة حتى تتحمّل -->
+    <com.santafe.launcher.PatternView
         android:id="@+id/backdrop"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
@@ -214,6 +214,26 @@
             android:paddingEnd="4dp" />
     </LinearLayout>
     </LinearLayout>
+
+    <!-- سبب تعذّر تحميل الخريطة، والضغط يعيد المحاولة -->
+    <TextView
+        android:id="@+id/map_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="64dp"
+        android:background="@drawable/speed_bg"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:maxWidth="520dp"
+        android:paddingStart="14dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="8dp"
+        android:textColor="@color/ink_soft"
+        android:textSize="13sp"
+        android:visibility="gone" />
 
     <!-- تنبيه الطريق: كاميرا أو مطب أمامك -->
     <LinearLayout

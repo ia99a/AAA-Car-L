@@ -45,6 +45,20 @@
                 android:textColor="@color/ink_soft"
                 android:textSize="12sp" />
         </LinearLayout>
+
+        <!-- يظهر إن تعذّر تحميل الصفحة: السبب، والضغط يعيد المحاولة -->
+        <TextView
+            android:id="@+id/video_status"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#F2111316"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:padding="12dp"
+            android:textColor="@color/ink_soft"
+            android:textSize="12sp"
+            android:visibility="gone" />
     </FrameLayout>
 
     <LinearLayout

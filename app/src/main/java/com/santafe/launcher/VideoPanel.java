@@ -43,6 +43,7 @@ final class VideoPanel {
     private final FrameLayout fullHost;    // طبقة ملء الشاشة
     private final View driveCover;         // غطاء أثناء القيادة
     private final TextView toggleLabel;
+    private TextView status;
     private boolean full, moving;
     private View customView;
     private WebChromeClient.CustomViewCallback customCb;
@@ -66,6 +67,9 @@ final class VideoPanel {
         s.setSaveFormData(false);
         if (android.os.Build.VERSION.SDK_INT >= 26) s.setSafeBrowsingEnabled(true);
         CookieManager.getInstance().setAcceptThirdPartyCookies(web, false);
+        // يوتيوب يقدّم نسخة محدودة (أو لا يعمل) حين يعرف أنه داخل WebView؛ نعرّف اللوحة كمتصفح Chrome للجوال
+        String ua = s.getUserAgentString();
+        if (ua != null) s.setUserAgentString(ua.replace("; wv)", ")").replaceAll("Version/\\d+(\\.\\d+)* ", ""));
         web.setBackgroundColor(0xFF000000);
 
         web.setWebViewClient(new WebViewClient() {
@@ -77,6 +81,25 @@ final class VideoPanel {
 
             @Override public WebResourceResponse shouldInterceptRequest(WebView v, WebResourceRequest r) {
                 return isAd(r.getUrl()) ? LiveMap.blocked() : null;
+            }
+
+            @Override public void onPageStarted(WebView v, String url, android.graphics.Bitmap icon) {
+                if (status != null) status.setVisibility(View.GONE);
+            }
+
+            @Override public void onReceivedError(WebView v, WebResourceRequest r, android.webkit.WebResourceError e) {
+                if (android.os.Build.VERSION.SDK_INT >= 23 && r.isForMainFrame())
+                    showError(LiveMap.reasonFor(act, e.getErrorCode(), 0, String.valueOf(e.getDescription())));
+            }
+
+            @Override public void onReceivedHttpError(WebView v, WebResourceRequest r, WebResourceResponse resp) {
+                if (r.isForMainFrame() && resp.getStatusCode() >= 400)
+                    showError(LiveMap.reasonFor(act, 0, resp.getStatusCode(), null));
+            }
+
+            @Override public void onReceivedSslError(WebView v, android.webkit.SslErrorHandler h, android.net.http.SslError e) {
+                h.cancel();
+                showError(act.getString(R.string.map_err_ssl));
             }
         });
         web.setWebChromeClient(new WebChromeClient() {
@@ -93,6 +116,18 @@ final class VideoPanel {
 
         String saved = Lang.prefs(act).getString("video_url", HOME);
         web.loadUrl(saved != null && saved.startsWith("https://") ? saved : HOME);
+    }
+
+    /** رسالة الخطأ فوق اللوحة؛ الضغط عليها يعيد التحميل */
+    void setStatusView(TextView t) {
+        status = t;
+        t.setOnClickListener(v -> { t.setVisibility(View.GONE); web.reload(); });
+    }
+
+    private void showError(String reason) {
+        if (status == null) return;
+        status.setText(act.getString(R.string.video_err, reason));
+        status.setVisibility(View.VISIBLE);
     }
 
     static boolean isAd(Uri u) {

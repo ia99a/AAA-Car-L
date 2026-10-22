@@ -30,6 +30,44 @@
             android:textColor="@color/ink"
             android:textSize="15sp" />
 
+        <!-- الصفحتان: الأساسية (٨ تطبيقات تختارها) وكل البرامج. التنقل بالضغط أو بالسحب -->
+        <LinearLayout
+            android:id="@+id/tabs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tab_favs"
+                android:layout_width="wrap_content"
+                android:layout_height="42dp"
+                android:background="@drawable/chip_bg"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:text="@string/apps_favs"
+                android:textColor="@color/ink"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tab_all"
+                android:layout_width="wrap_content"
+                android:layout_height="42dp"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/chip_bg"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:text="@string/apps_all"
+                android:textColor="@color/ink"
+                android:textSize="15sp" />
+        </LinearLayout>
+
         <TextView
             android:id="@+id/pick_title"
             android:layout_width="0dp"
@@ -57,12 +95,48 @@
             android:visibility="gone" />
     </LinearLayout>
 
+    <!-- الصفحة الأولى: ٨ تطبيقات أساسية بمربعات كبيرة (صفان × ٤) -->
+    <LinearLayout
+        android:id="@+id/fav_page"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/fav_row_1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal" />
+
+        <LinearLayout
+            android:id="@+id/fav_row_2"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="12dp"
+            android:layout_weight="1"
+            android:orientation="horizontal" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="@string/apps_favs_hint"
+            android:textColor="@color/ink_faint"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- الصفحة الثانية: كل البرامج -->
     <GridView
         android:id="@+id/grid"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="12dp"
         android:layout_weight="1"
+        android:visibility="gone"
         android:columnWidth="150dp"
         android:horizontalSpacing="12dp"
         android:numColumns="auto_fit"
