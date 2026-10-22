@@ -143,4 +143,26 @@
     <string name="nav_icon">Icon only</string>
     <string name="nav_live">Live map</string>
     <string name="nav_hidden">Hide</string>
+    <string name="set_widgets">Clock, speed and radar</string>
+    <string name="set_clock_look">Clock color</string>
+    <string name="set_clock_format">Time and date</string>
+    <string name="set_speed_look">Speed color</string>
+    <string name="set_speed_limit">Speeding alert</string>
+    <string name="set_radar">Camera radar</string>
+    <string name="set_radar_dist">Camera alert distance</string>
+    <string name="look_auto">Matches background</string>
+    <string name="look_glass">Dark glass</string>
+    <string name="look_blue">Blue</string>
+    <string name="look_gold">Gold</string>
+    <string name="look_green">Green</string>
+    <string name="look_burgundy">Burgundy</string>
+    <string name="fmt_12">12-hour</string>
+    <string name="fmt_24">24-hour</string>
+    <string name="date_greg">Gregorian</string>
+    <string name="date_hijri">Hijri</string>
+    <string name="date_none">No date</string>
+    <string name="limit_off">Off</string>
+    <string name="radar_cams">Cameras</string>
+    <string name="radar_bumps">Bumps</string>
+    <string name="radar_sound">Sound</string>
 </resources>

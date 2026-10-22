@@ -102,12 +102,14 @@
                 android:paddingBottom="7dp">
 
                 <ImageView
+                    android:id="@+id/clock_icon"
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:importantForAccessibility="no"
                     android:src="@drawable/ic_nav" />
 
                 <TextClock
+                    android:id="@+id/clock_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
@@ -118,13 +120,13 @@
                     android:textSize="22sp"
                     android:textStyle="bold" />
 
-                <TextClock
+                <!-- التاريخ ميلادي أو هجري (أم القرى) حسب الإعدادات، يُحدَّث من الشاشة الرئيسية -->
+                <TextView
+                    android:id="@+id/clock_date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
-                    android:alpha="0.8"
-                    android:format12Hour="@string/date_format"
-                    android:format24Hour="@string/date_format"
+                    android:alpha="0.85"
                     android:textColor="@color/ink"
                     android:textSize="13sp" />
             </LinearLayout>

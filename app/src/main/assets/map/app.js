@@ -11,12 +11,12 @@ map.attributionControl.setPrefix(false);
 // مصادر الخريطة بالترتيب: إن فشل الأول تمامًا ننتقل للتالي.
 // حالة التحميل تُبلَّغ للتطبيق عبر عنوان الصفحة فقط (بلا أي جسر بين الصفحة والتطبيق).
 var PROVIDERS = LIGHT ? [
-  {url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+  {url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
    o:{subdomains:'abcd', maxZoom:19, attribution:'&copy; OpenStreetMap &copy; CARTO'}},
   {url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
    o:{maxZoom:19, attribution:'&copy; Esri'}}
 ] : [
-  {url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  {url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
    o:{subdomains:'abcd', maxZoom:19, attribution:'&copy; OpenStreetMap &copy; CARTO'}},
   {url:'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
    o:{maxNativeZoom:16, maxZoom:19, attribution:'&copy; Esri'}}
@@ -25,7 +25,9 @@ var tiles = null, provider = 0, loaded = 0, failed = 0;
 function useProvider(i){
   if (tiles) map.removeLayer(tiles);
   provider = i; loaded = 0; failed = 0;
-  tiles = L.tileLayer(PROVIDERS[i].url, PROVIDERS[i].o).addTo(map);
+  // أداء: بلاطات عادية (لا مضاعفة الدقة)، وتحميل بعد توقف الحركة، واحتفاظ بصفّين حول الشاشة
+  var o = PROVIDERS[i].o; o.updateWhenIdle = true; o.updateWhenZooming = false; o.keepBuffer = 2;
+  tiles = L.tileLayer(PROVIDERS[i].url, o).addTo(map);
   tiles.on('tileload', function(){ if (++loaded === 1) document.title = 'tiles:ok:' + i; });
   tiles.on('tileerror', function(){
     if (loaded > 0 || ++failed < 6) return;

@@ -46,18 +46,25 @@ public final class Hazards {
         return (Math.toDegrees(Math.atan2(y, x)) + 360) % 360;
     }
 
-    static double angleDiff(double a, double b) {
+    public static double angleDiff(double a, double b) {
         double d = Math.abs(a - b) % 360;
         return d > 180 ? 360 - d : d;
     }
 
     /** أقرب خطر أمامك في مدى التنبيه، أو null */
     public static Hit ahead(double lat, double lng, double heading, double speedKmh, List<Poi> pois) {
+        return ahead(lat, lng, heading, speedKmh, pois, CAMERA_RANGE, BUMP_RANGE);
+    }
+
+    /** نفسها بمدى مخصص من الإعدادات؛ مدى ٠ يعني أن هذا النوع لا يُنبَّه له */
+    public static Hit ahead(double lat, double lng, double heading, double speedKmh, List<Poi> pois,
+                            double cameraRange, double bumpRange) {
         if (heading < 0 || speedKmh < MIN_SPEED_KMH || pois == null) return null;
         Hit best = null;
         for (Poi p : pois) {
+            double range = p.kind == CAMERA ? cameraRange : bumpRange;
+            if (range <= 0) continue;
             double d = distance(lat, lng, p.lat, p.lng);
-            double range = p.kind == CAMERA ? CAMERA_RANGE : BUMP_RANGE;
             if (d > range || d < 5) continue;
             if (angleDiff(heading, bearing(lat, lng, p.lat, p.lng)) > AHEAD_DEG) continue;
             if (best == null || d < best.meters) best = new Hit(p, d);

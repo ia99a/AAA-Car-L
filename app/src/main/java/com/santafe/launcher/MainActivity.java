@@ -19,6 +19,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextClock;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,9 +52,20 @@ public class MainActivity extends Activity {
     private SharedPreferences prefs;
     private final Handler ui = new Handler(Looper.getMainLooper());
     private final Runnable ticker = new Runnable() {
-        @Override public void run() { refreshPrayer(); ui.postDelayed(this, 5000); }
+        @Override public void run() { refreshPrayer(); refreshDate(); ui.postDelayed(this, 5000); }
     };
     private TextView prayerName, prayerTime;
+    private TextClock clockTime;
+    private TextView clockDate;
+    private ImageView clockIcon;
+    private String lastSpeed, lastDate, builtSig;
+
+    private String dockSignature() {
+        StringBuilder b = new StringBuilder(Tools.enabled(this).toString());
+        for (int i = 0; i < DOCK_SLOTS; i++) b.append('|').append(prefs.getString("dock_" + i, ""));
+        return b.toString();
+    }
+    private int speedColor = 0xFFFFFFFF, speedLimit;
     private long[] todayTimes, tomorrowTimes;
     private int timesDay = -1;
     private String timesCity;
@@ -80,6 +92,9 @@ public class MainActivity extends Activity {
         cardHudhud = findViewById(R.id.card_hudhud);
         railItems = findViewById(R.id.rail_items);
         speedView = findViewById(R.id.speed);
+        clockTime = findViewById(R.id.clock_time);
+        clockDate = findViewById(R.id.clock_date);
+        clockIcon = findViewById(R.id.clock_icon);
         dock = findViewById(R.id.dock);
 
         ((TextView) cardMaps.findViewById(R.id.nav_title)).setText(R.string.maps);
@@ -131,8 +146,13 @@ public class MainActivity extends Activity {
         liveMap = new LiveMap(this, findViewById(R.id.map_web), backdrop, alert,
                 findViewById(R.id.alert_text), findViewById(R.id.alert_dist), Home.mapBackground(this), new LiveMap.Listener() {
                     @Override public void onSpeed(double kmh, boolean moving) {
-                        if (Home.shown(MainActivity.this, Home.SPEED)) speedView.setVisibility(View.VISIBLE);
-                        speedView.setText(Lang.speed(MainActivity.this, kmh));
+                        if (Home.shown(MainActivity.this, Home.SPEED) && speedView.getVisibility() != View.VISIBLE) speedView.setVisibility(View.VISIBLE);
+                        String t = Lang.speed(MainActivity.this, kmh);
+                        if (!t.equals(lastSpeed)) { // لا نعيد رسم النص إلا إن تغيّر الرقم
+                            lastSpeed = t;
+                            speedView.setText(t);
+                            speedView.setTextColor(speedLimit > 0 && kmh > speedLimit ? 0xFFFF5A50 : speedColor);
+                        }
                         if (video != null) video.setMoving(moving);
                     }
 
@@ -171,8 +191,10 @@ public class MainActivity extends Activity {
         bindCard(cardMaps, MAPS_PKG, R.string.maps_sub);
         bindCard(cardHudhud, hudhudPkg, R.string.hudhud_sub);
         applyHomeItems();
-        buildDock();
-        buildRail();
+        // البار والشريط يُعاد بناؤهما فقط إن تغيّرت محتوياتهما (تحميل الأيقونات بطيء نسبيًا)
+        String sig = dockSignature();
+        if (!sig.equals(builtSig)) { builtSig = sig; buildDock(); buildRail(); }
+        else { timesDay = -1; refreshPrayer(); }
         ui.post(ticker);
         liveMap.start();
         if (miniMaps != null) miniMaps.resume();
@@ -222,9 +244,39 @@ public class MainActivity extends Activity {
         card.setContentDescription(((TextView) card.findViewById(R.id.nav_title)).getText());
     }
 
+    /** بطاقة الساعة ولوحة السرعة: النمط والألوان وشكل الوقت والتاريخ */
+    private void applyLooks() {
+        int cs = Looks.style(this, "clock_style");
+        int[] k = Looks.colors(this, cs);
+        findViewById(R.id.top_card).setBackground(Looks.background(this, cs, 14));
+        clockTime.setTextColor(k[3]);
+        clockDate.setTextColor(k[3]);
+        clockIcon.setColorFilter(k[4]);
+        String f = Looks.clock24(this) ? "HH:mm" : "h:mm a";
+        clockTime.setFormat12Hour(f);
+        clockTime.setFormat24Hour(f);
+        clockDate.setVisibility("none".equals(Looks.dateMode(this)) ? View.GONE : View.VISIBLE);
+        lastDate = null;
+        refreshDate();
+        int ss = Looks.style(this, "speed_style");
+        speedView.setBackground(Looks.background(this, ss, 14));
+        speedColor = Looks.colors(this, ss)[3];
+        speedLimit = Looks.speedLimit(this);
+        speedView.setTextColor(speedColor);
+        lastSpeed = null;
+    }
+
+    /** التاريخ يتغيّر مرة في اليوم؛ نعيد حسابه فقط إن تغيّر */
+    private void refreshDate() {
+        if (clockDate.getVisibility() != View.VISIBLE) return;
+        String d = Looks.dateText(this, System.currentTimeMillis());
+        if (!d.equals(lastDate)) { lastDate = d; clockDate.setText(d); }
+    }
+
     /** إظهار عناصر الرئيسية أو إخفاؤها حسب الإعدادات، ولون النقش */
     private void applyHomeItems() {
         backdrop.setPalette(PatternView.current(this));
+        applyLooks();
         findViewById(R.id.top_card).setVisibility(Home.shown(this, Home.CLOCK) ? View.VISIBLE : View.INVISIBLE);
         if (!Home.shown(this, Home.SPEED)) speedView.setVisibility(View.GONE);
         applyNavMode(cardMaps, Home.navMode(this, Home.MAPS));

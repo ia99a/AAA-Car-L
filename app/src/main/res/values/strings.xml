@@ -147,4 +147,26 @@
     <string name="nav_icon">أيقونة فقط</string>
     <string name="nav_live">خريطة حية</string>
     <string name="nav_hidden">إخفاء</string>
+    <string name="set_widgets">الساعة والسرعة والرادار</string>
+    <string name="set_clock_look">لون الساعة</string>
+    <string name="set_clock_format">الوقت والتاريخ</string>
+    <string name="set_speed_look">لون السرعة</string>
+    <string name="set_speed_limit">تنبيه تجاوز السرعة</string>
+    <string name="set_radar">رادار الكاميرات</string>
+    <string name="set_radar_dist">مسافة تنبيه الكاميرا</string>
+    <string name="look_auto">متناسق مع الخلفية</string>
+    <string name="look_glass">زجاجي داكن</string>
+    <string name="look_blue">أزرق</string>
+    <string name="look_gold">ذهبي</string>
+    <string name="look_green">أخضر</string>
+    <string name="look_burgundy">عنابي</string>
+    <string name="fmt_12">١٢ ساعة</string>
+    <string name="fmt_24">٢٤ ساعة</string>
+    <string name="date_greg">ميلادي</string>
+    <string name="date_hijri">هجري</string>
+    <string name="date_none">بلا تاريخ</string>
+    <string name="limit_off">بدون</string>
+    <string name="radar_cams">الكاميرات</string>
+    <string name="radar_bumps">المطبات</string>
+    <string name="radar_sound">الصوت</string>
 </resources>

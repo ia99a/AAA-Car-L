@@ -76,6 +76,9 @@ final class MiniMap {
     }
 
     void setPos(double lat, double lng, double heading) {
+        // الخريطة المصغّرة لا تحتاج كل حركة صغيرة: نحدّث كل ٥ أمتار أو ١٠ درجات
+        if (!Double.isNaN(this.lat) && Hazards.distance(lat, lng, this.lat, this.lng) < 5
+                && Hazards.angleDiff(heading, this.heading) < 10) return;
         this.lat = lat; this.lng = lng; this.heading = heading;
         if (ready) push();
     }

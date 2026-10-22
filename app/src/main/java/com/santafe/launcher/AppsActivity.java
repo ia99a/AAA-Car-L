@@ -76,8 +76,6 @@ public class AppsActivity extends Activity {
         tabFavs.setOnClickListener(v -> showPage(false));
         tabAll.setOnClickListener(v -> showPage(true));
 
-        loadApps();
-
         // وضع الاختيار: يُفتح من خانة في البار لاختيار تطبيقها
         pickMode = getIntent().hasExtra(EXTRA_PICK_SLOT);
         if (pickMode) {
@@ -89,7 +87,7 @@ public class AppsActivity extends Activity {
         }
 
         GridView g = (GridView) grid;
-        g.setAdapter(new BaseAdapter() {
+        BaseAdapter adapter = new BaseAdapter() {
             @Override public int getCount() { return apps.size(); }
             @Override public Object getItem(int p) { return apps.get(p); }
             @Override public long getItemId(int p) { return p; }
@@ -100,7 +98,8 @@ public class AppsActivity extends Activity {
                 ((TextView) v.findViewById(R.id.app_label)).setText(a.label);
                 return v;
             }
-        });
+        };
+        g.setAdapter(adapter);
         g.setOnItemClickListener((parent, view, p, id) -> onAppChosen(apps.get(p)));
 
         // السحب الأفقي بين الصفحتين
@@ -116,9 +115,19 @@ public class AppsActivity extends Activity {
             }
         });
 
-        if (!prefs.getBoolean("favs_init", false)) suggestFavs();
-        buildFavs();
         showPage(pickMode || prefs.getBoolean("apps_last_all", false));
+        // الأيقونات تُحمَّل في الخلفية فتفتح الشاشة فورًا دون تعليق
+        new Thread(() -> {
+            List<App> loaded = loadApps();
+            runOnUiThread(() -> {
+                if (isFinishing() || isDestroyed()) return;
+                apps.clear();
+                apps.addAll(loaded);
+                adapter.notifyDataSetChanged();
+                if (!prefs.getBoolean("favs_init", false)) suggestFavs();
+                buildFavs();
+            });
+        }, "apps-loader").start();
     }
 
     @Override
@@ -139,7 +148,8 @@ public class AppsActivity extends Activity {
         super.onBackPressed();
     }
 
-    private void loadApps() {
+    private List<App> loadApps() {
+        List<App> apps = new ArrayList<>();
         PackageManager pm = getPackageManager();
         Intent i = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
         for (ResolveInfo r : pm.queryIntentActivities(i, 0)) {
@@ -153,6 +163,7 @@ public class AppsActivity extends Activity {
         }
         final Collator c = Collator.getInstance();
         Collections.sort(apps, (x, y) -> c.compare(x.label, y.label));
+        return apps;
     }
 
     private void showPage(boolean all) {

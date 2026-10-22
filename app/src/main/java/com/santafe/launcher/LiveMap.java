@@ -103,6 +103,7 @@ final class LiveMap implements LocationListener {
         s.setBuiltInZoomControls(false);
         if (android.os.Build.VERSION.SDK_INT >= 26) s.setSafeBrowsingEnabled(true);
         web.setBackgroundColor(act.getColor(R.color.map_bg));
+        web.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         web.setVisibility(View.INVISIBLE);
         if (!display) return; // خلفية النقش: لا نحمّل الخريطة
         web.setWebViewClient(new WebViewClient() {
@@ -214,7 +215,14 @@ final class LiveMap implements LocationListener {
     }
 
     @SuppressLint("MissingPermission")
+    /** خيارات رادار الكاميرات من الإعدادات (تُقرأ عند كل عودة للرئيسية) */
+    private double camRange = Hazards.CAMERA_RANGE, bumpRange = Hazards.BUMP_RANGE;
+    private boolean sound = true;
+
     void start() {
+        camRange = Looks.radarCameras(act) ? Looks.radarDistance(act) : 0;
+        bumpRange = Looks.radarBumps(act) ? Hazards.BUMP_RANGE : 0;
+        sound = Looks.radarSound(act);
         web.onResume();
         if (failed) retryNow();
         if (!hasPermission(act)) return;
@@ -271,13 +279,22 @@ final class LiveMap implements LocationListener {
         shown = true;
         web.setAlpha(0f);
         web.setVisibility(View.VISIBLE);
-        web.animate().alpha(1f).setDuration(700).start();
+        // بعد ظهور الخريطة نخفي النقش تحتها فلا يُرسم بلا فائدة
+        web.animate().alpha(1f).setDuration(700).withEndAction(() -> fallback.setVisibility(View.INVISIBLE)).start();
     }
 
+    private double pushedLat = Double.NaN, pushedLng, pushedHeading;
+    private long pushedAt;
+
+    /** لا نرسل للصفحة إلا ما يغيّر الصورة: حركة متر ونصف، أو استدارة ٤ درجات، أو كل ٣ ثوانٍ */
     private void pushPosition() {
         if (!display) return;
-        web.evaluateJavascript(String.format(Locale.US, "setPos(%.6f,%.6f,%.1f)",
-                last.getLatitude(), last.getLongitude(), heading), null);
+        double la = last.getLatitude(), lo = last.getLongitude();
+        long now = android.os.SystemClock.uptimeMillis();
+        if (!Double.isNaN(pushedLat) && Hazards.distance(la, lo, pushedLat, pushedLng) < 1.5
+                && Hazards.angleDiff(heading, pushedHeading) < 4 && now - pushedAt < 3000) return;
+        pushedLat = la; pushedLng = lo; pushedHeading = heading; pushedAt = now;
+        web.evaluateJavascript(String.format(Locale.US, "setPos(%.6f,%.6f,%.1f)", la, lo, heading), null);
     }
 
     /** قبل أول موقع: نتوسط مدينة الصلاة المختارة */
@@ -364,7 +381,7 @@ final class LiveMap implements LocationListener {
                     alerted.remove(p.id);
             }
         }
-        Hazards.Hit hit = Hazards.ahead(last.getLatitude(), last.getLongitude(), heading, kmh, pois);
+        Hazards.Hit hit = Hazards.ahead(last.getLatitude(), last.getLongitude(), heading, kmh, pois, camRange, bumpRange);
         if (hit == null) {
             if (alertBox.getVisibility() == View.VISIBLE) alertBox.animate().alpha(0f).setDuration(300)
                     .withEndAction(() -> alertBox.setVisibility(View.GONE)).start();
@@ -381,7 +398,7 @@ final class LiveMap implements LocationListener {
             alertBox.setVisibility(View.VISIBLE);
             alertBox.animate().alpha(1f).setDuration(250).start();
         }
-        if (alerted.add(hit.poi.id)) beep(cam);
+        if (alerted.add(hit.poi.id) && sound) beep(cam);
     }
 
     private void beep(boolean cam) {

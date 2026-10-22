@@ -276,6 +276,121 @@ public class SettingsActivity extends Activity {
         }
         buildNavModes(R.id.nav_modes_maps, Home.MAPS);
         buildNavModes(R.id.nav_modes_hudhud, Home.HUDHUD);
+        buildWidgets();
+    }
+
+    // ───────── الساعة والسرعة والرادار ─────────
+
+    /** مجموعة أزرار يُختار منها واحد؛ onPick يحفظ الاختيار */
+    private void single(int containerId, CharSequence[] labels, int selected, java.util.function.IntConsumer onPick) {
+        android.widget.LinearLayout box = findViewById(containerId);
+        float dp = getResources().getDisplayMetrics().density;
+        for (int i = 0; i < labels.length; i++) {
+            final int idx = i;
+            TextView c = chip(labels[i], i == selected, 38, false);
+            if (i > 0) ((android.widget.LinearLayout.LayoutParams) c.getLayoutParams()).setMarginStart((int) (6 * dp));
+            c.setOnClickListener(v -> {
+                for (int k = 0; k < box.getChildCount(); k++) box.getChildAt(k).setSelected(k == idx);
+                onPick.accept(idx);
+            });
+            box.addView(c);
+        }
+    }
+
+    /** دوائر ألوان أنماط البطاقة؛ النمط المختار بإطار برتقالي واسمه يظهر عند الضغط */
+    private void styleSwatches(int containerId, String key) {
+        android.widget.LinearLayout box = findViewById(containerId);
+        float dp = getResources().getDisplayMetrics().density;
+        Runnable paint = () -> {
+            int cur = Looks.style(this, key);
+            for (int k = 0; k < box.getChildCount(); k++) {
+                int[] col = Looks.colors(this, k);
+                android.graphics.drawable.GradientDrawable d = new android.graphics.drawable.GradientDrawable(
+                        android.graphics.drawable.GradientDrawable.Orientation.TL_BR, new int[]{col[0] | 0xFF000000, col[1] | 0xFF000000});
+                d.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+                d.setStroke((int) ((k == cur ? 3 : 1) * dp), k == cur ? getColor(R.color.orange) : 0x33FFFFFF);
+                box.getChildAt(k).setBackground(d);
+            }
+        };
+        for (int i = 0; i < Looks.STYLES.length; i++) {
+            final int idx = i;
+            TextView sw = new TextView(this);
+            sw.setGravity(android.view.Gravity.CENTER);
+            sw.setTextSize(11);
+            sw.setTextColor(Looks.colors(this, i)[3]);
+            sw.setText(i == 0 ? "A" : ""); // «متناسق» يتبع لون الخلفية
+            sw.setContentDescription(getString(Looks.STYLE_NAMES[i]));
+            android.widget.LinearLayout.LayoutParams lp = new android.widget.LinearLayout.LayoutParams((int) (34 * dp), (int) (34 * dp));
+            if (i > 0) lp.setMarginStart((int) (8 * dp));
+            sw.setLayoutParams(lp);
+            sw.setOnClickListener(v -> {
+                Looks.setStyle(this, key, idx);
+                paint.run();
+                Toast.makeText(this, Looks.STYLE_NAMES[idx], Toast.LENGTH_SHORT).show();
+            });
+            box.addView(sw);
+        }
+        paint.run();
+    }
+
+    private void buildWidgets() {
+        android.content.SharedPreferences p = Lang.prefs(this);
+        styleSwatches(R.id.clock_styles, "clock_style");
+        styleSwatches(R.id.speed_styles, "speed_style");
+
+        // الوقت: ١٢ أو ٢٤ ساعة، والتاريخ: ميلادي أو هجري أو بدون (مجموعتان في صف واحد)
+        String[] dates = {"greg", "hijri", "none"};
+        CharSequence[] fmt = {getString(R.string.fmt_12), getString(R.string.fmt_24),
+                getString(R.string.date_greg), getString(R.string.date_hijri), getString(R.string.date_none)};
+        android.widget.LinearLayout opts = findViewById(R.id.clock_opts);
+        float dp = getResources().getDisplayMetrics().density;
+        String dm = Looks.dateMode(this);
+        for (int i = 0; i < fmt.length; i++) {
+            final int idx = i;
+            boolean sel = i < 2 ? (i == 1) == Looks.clock24(this) : dates[i - 2].equals(dm);
+            TextView c = chip(fmt[i], sel, 38, false);
+            android.widget.LinearLayout.LayoutParams lp = (android.widget.LinearLayout.LayoutParams) c.getLayoutParams();
+            if (i > 0) lp.setMarginStart((int) ((i == 2 ? 18 : 6) * dp)); // فاصل بين المجموعتين
+            c.setOnClickListener(v -> {
+                if (idx < 2) p.edit().putBoolean("clock_24h", idx == 1).apply();
+                else p.edit().putString("date_mode", dates[idx - 2]).apply();
+                for (int k = 0; k < opts.getChildCount(); k++)
+                    if ((k < 2) == (idx < 2)) opts.getChildAt(k).setSelected(k == idx);
+            });
+            opts.addView(c);
+        }
+
+        // تنبيه تجاوز السرعة: النص يصير أحمر فوق الحد
+        int[] limits = {0, 100, 120, 140};
+        int curLimit = Looks.speedLimit(this), sel = 0;
+        CharSequence[] limitLabels = new CharSequence[limits.length];
+        for (int i = 0; i < limits.length; i++) {
+            limitLabels[i] = limits[i] == 0 ? getString(R.string.limit_off) : Lang.speed(this, limits[i]);
+            if (limits[i] == curLimit) sel = i;
+        }
+        single(R.id.speed_limit_opts, limitLabels, sel, i -> p.edit().putInt("speed_limit", limits[i]).apply());
+
+        // رادار الكاميرات: ثلاثة مفاتيح مستقلة
+        String[] keys = {"radar_cam", "radar_bump", "radar_sound"};
+        int[] names = {R.string.radar_cams, R.string.radar_bumps, R.string.radar_sound};
+        android.widget.LinearLayout radar = findViewById(R.id.radar_opts);
+        for (int i = 0; i < keys.length; i++) {
+            final String key = keys[i];
+            TextView c = chip(getString(names[i]), p.getBoolean(key, true), 38, false);
+            if (i > 0) ((android.widget.LinearLayout.LayoutParams) c.getLayoutParams()).setMarginStart((int) (6 * dp));
+            c.setOnClickListener(v -> {
+                boolean on = !p.getBoolean(key, true);
+                p.edit().putBoolean(key, on).apply();
+                v.setSelected(on);
+            });
+            radar.addView(c);
+        }
+
+        int[] dists = {300, 500, 800};
+        int curDist = Looks.radarDistance(this), dsel = 1;
+        CharSequence[] distLabels = new CharSequence[dists.length];
+        for (int i = 0; i < dists.length; i++) { distLabels[i] = Lang.meters(this, dists[i]); if (dists[i] == curDist) dsel = i; }
+        single(R.id.radar_dist_opts, distLabels, dsel, i -> p.edit().putInt("radar_dist", dists[i]).apply());
     }
 
     /** خرائط قوقل أو هدهد: أربعة أوضاع، واحد منها مختار */

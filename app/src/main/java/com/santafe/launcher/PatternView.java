@@ -43,6 +43,8 @@ public class PatternView extends View {
             image = BitmapFactory.decodeResource(c.getResources(), R.drawable.pattern_soft, o);
         }
         setPalette(0);
+        // تُرسم مرة واحدة في طبقة على كرت الشاشة، ولا يُعاد رسمها إلا إن تغيّر اللون أو المقاس
+        setLayerType(LAYER_TYPE_HARDWARE, null);
     }
 
     static int current(Context c) {
