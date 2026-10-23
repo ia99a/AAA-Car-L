@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- صفحة البداية للمتصفح المدمج: بلا سكربتات، والبحث يذهب إلى Brave Search فقط -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; form-action https://search.brave.com;">
+<title>صفحة البداية</title>
+<style>
+  html,body{margin:0;height:100%;background:#141619;color:#eef0f3;font-family:sans-serif}
+  body{display:flex;flex-direction:column;justify-content:center;gap:10px;padding:10px 12px;box-sizing:border-box}
+  form{display:flex;gap:6px}
+  input{flex:1;min-width:0;height:34px;border-radius:17px;border:1px solid #2f343b;background:#1e2126;color:#eef0f3;padding:0 14px;font-size:14px;outline:none}
+  input:focus{border-color:#fb542b}
+  button{height:34px;padding:0 14px;border-radius:17px;border:none;background:#fb542b;color:#fff;font-size:14px;font-weight:bold}
+  .tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+  a{display:flex;flex-direction:column;align-items:center;gap:4px;text-decoration:none;color:#c9cdd3;font-size:11px;padding:6px 2px;border-radius:10px;background:#1b1e22}
+  a:active{background:#262a30}
+  i{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-style:normal;font-weight:bold;font-size:14px;color:#fff}
+  @media (max-height:150px){a span{display:none}}
+</style>
+</head>
+<body>
+  <form action="https://search.brave.com/search" method="get">
+    <input type="search" name="q" placeholder="ابحث في Brave" autocomplete="off" aria-label="بحث">
+    <button type="submit">بحث</button>
+  </form>
+  <nav class="tiles" aria-label="مواقع سريعة">
+    <a href="https://m.youtube.com/"><i style="background:#e5352b">▶</i><span>يوتيوب</span></a>
+    <a href="https://search.brave.com/"><i style="background:#fb542b">B</i><span>Brave</span></a>
+    <a href="https://www.google.com/"><i style="background:#3b7ddd">G</i><span>قوقل</span></a>
+    <a href="https://ar.m.wikipedia.org/"><i style="background:#5b6370">W</i><span>ويكيبيديا</span></a>
+    <a href="https://x.com/"><i style="background:#2a2d32">X</i><span>إكس</span></a>
+    <a href="https://sabq.org/"><i style="background:#1f7a52">س</i><span>سبق</span></a>
+  </nav>
+</body>
+</html>

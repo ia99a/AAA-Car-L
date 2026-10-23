@@ -74,7 +74,7 @@
     <string name="alert_bump">مطب</string>
     <string name="video_large">تكبير</string>
     <string name="video_small">تصغير</string>
-    <string name="video_home">صفحة يوتيوب الرئيسية</string>
+    <string name="video_home">صفحة البداية</string>
     <string name="video_open_brave">افتح في Brave</string>
     <string name="video_driving">الصورة مخفية أثناء القيادة\nالصوت مستمر</string>
     <string name="set_prayer_alerts">تنبيهات الصلاة</string>
@@ -118,7 +118,7 @@
     <string name="map_err_server">خطأ من الخادم (رمز %1$d)</string>
     <string name="map_err_dns">لا إنترنت، أو إعداد DNS الخاص غير صحيح</string>
     <string name="map_err_connect">تعذّر الاتصال، الإنترنت ضعيف أو محجوب</string>
-    <string name="video_err">تعذّر فتح يوتيوب\n%1$s\nاضغط لإعادة المحاولة</string>
+    <string name="video_err">تعذّر فتح الصفحة\n%1$s\nاضغط لإعادة المحاولة</string>
     <string name="brave_failed">تعذّر فتح Brave</string>
     <string name="set_home">الشاشة الرئيسية</string>
     <string name="set_bg">الخلفية</string>
@@ -136,7 +136,7 @@
     <string name="set_elements_desc">اضغط على العنصر لإظهاره أو إخفائه</string>
     <string name="el_clock">الساعة</string>
     <string name="el_speed">السرعة</string>
-    <string name="el_video">الفيديو</string>
+    <string name="el_video">المتصفح</string>
     <string name="el_dock">البار السفلي</string>
     <string name="set_more">أخرى</string>
     <string name="set_webview">متصفح النظام (WebView)</string>
@@ -175,4 +175,6 @@
     <string name="el_iqama">مؤقت الإقامة</string>
     <string name="iq_in">الإقامة بعد</string>
     <string name="iq_done">أقيمت الصلاة</string>
+    <string name="video_url_hint">ابحث في Brave أو اكتب عنوانًا</string>
+    <string name="video_back">رجوع</string>
 </resources>

@@ -38,9 +38,9 @@ import java.util.concurrent.Executors;
 
 /**
  * الخريطة الحية خلف الشاشة الرئيسية:
- * خريطة داكنة (OpenStreetMap عبر CARTO) تتبع موقعك من GPS السيارة،
+ * خريطة داكنة (Esri أو OpenStreetMap) تتبع موقعك من GPS السيارة،
  * وعليها كاميرات السرعة والمطبات من OpenStreetMap، مع تنبيه صوتي ومكتوب حين تقترب منها.
- * الصفحة تُخدم من أصل https افتراضي داخل التطبيق (لا file://)، والبلاطات من CARTO ثم Esri احتياطًا.
+ * الصفحة تُخدم من أصل https افتراضي داخل التطبيق (لا file://)، والبلاطات من Esri ثم OpenStreetMap احتياطًا (بلا مفتاح API).
  * إن تعذّر تحميل الخريطة تبقى خلفية النقش ظاهرة، ويظهر سبب واضح (لا إنترنت، تاريخ خاطئ، رفض الخادم...).
  * في وضع خلفية النقش لا تُحمَّل الخريطة أصلًا، ويبقى GPS للسرعة وتنبيهات الكاميرات والمطبات.
  */
@@ -169,12 +169,12 @@ final class LiveMap implements LocationListener {
     }
 
     static boolean isTileHost(String host) {
-        return host.endsWith(".basemaps.cartocdn.com") || host.equals("server.arcgisonline.com");
+        return host.equals("server.arcgisonline.com") || host.equals("tile.openstreetmap.org");
     }
 
-    /** ملفات الصفحة من مجلد map داخل التطبيق فقط */
+    /** ملفات الصفحات من مجلدَي map و browser داخل التطبيق فقط */
     static WebResourceResponse asset(android.content.Context c, String path) {
-        if (path == null || !path.startsWith("/map/") || path.contains("..")) return blocked();
+        if (path == null || !(path.startsWith("/map/") || path.startsWith("/browser/")) || path.contains("..")) return blocked();
         String mime = path.endsWith(".html") ? "text/html" : path.endsWith(".js") ? "application/javascript"
                 : path.endsWith(".css") ? "text/css" : path.endsWith(".png") ? "image/png" : null;
         if (mime == null) return blocked();

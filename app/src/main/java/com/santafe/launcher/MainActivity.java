@@ -137,6 +137,8 @@ public class MainActivity extends Activity {
             card.findViewById(R.id.video_toggle).setOnClickListener(v -> video.toggle());
             findViewById(R.id.video_full_close).setOnClickListener(v -> video.toggle());
             card.findViewById(R.id.video_home).setOnClickListener(v -> video.home());
+            card.findViewById(R.id.video_back).setOnClickListener(v -> video.goBack());
+            video.setAddressBar(card.findViewById(R.id.video_url));
             card.findViewById(R.id.video_brave).setOnClickListener(v -> openBrave());
         } else {
             card.setVisibility(View.GONE);
@@ -606,7 +608,7 @@ public class MainActivity extends Activity {
         Intent launch = getPackageManager().getLaunchIntentForPackage(pkg);
         // نفتح الصفحة الحالية من لوحة الفيديو في Brave إن وُجدت
         String u = video == null ? null : video.url();
-        if (u != null && u.startsWith("https://")
+        if (u != null && u.startsWith("https://") && !u.contains(LiveMap.ORIGIN_HOST)
                 && tryStart(new Intent(Intent.ACTION_VIEW, Uri.parse(u)).setPackage(pkg))) return;
         if (!tryStart(launch)) Toast.makeText(this, R.string.brave_failed, Toast.LENGTH_LONG).show();
     }

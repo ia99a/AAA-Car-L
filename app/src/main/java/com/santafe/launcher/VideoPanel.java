@@ -18,13 +18,16 @@ import android.widget.TextView;
 import java.util.Locale;
 
 /**
- * لوحة الفيديو المثبتة يسار الشاشة الرئيسية: متصفح صغير مدمج لا يختفي ولا يطفو،
- * يتكبّر لملء الشاشة ويرجع لمكانه، ويحجب نطاقات الإعلانات المعروفة.
- * أثناء القيادة تُغطّى الصورة (الصوت يستمر) حفاظًا على انتباه السائق.
+ * لوحة المتصفح المثبتة يسار الشاشة الرئيسية: متصفح صغير مدمج بطابع Brave (البحث عبر Brave Search
+ * وحجب الإعلانات والمتتبعات)، لا يختفي ولا يطفو، يتكبّر لملء الشاشة ويرجع لمكانه.
+ * أندرويد لا يسمح بعرض تطبيق Brave نفسه داخل المشغّل، فزر Brave يفتح الصفحة الحالية فيه.
+ * أثناء القيادة تُغطّى الصورة (الصوت يستمر) ويُقفل شريط العنوان، حفاظًا على انتباه السائق.
  */
 final class VideoPanel {
 
-    static final String HOME = "https://m.youtube.com/";
+    /** صفحة البداية: بحث Brave واختصارات، من ملفات التطبيق نفسه */
+    static final String HOME = "https://" + LiveMap.ORIGIN_HOST + "/browser/start.html";
+    static final String SEARCH = "https://search.brave.com/search?q=";
 
     /** نطاقات إعلانات وتتبّع شائعة تُحجب داخل اللوحة */
     private static final String[] AD_HOSTS = {
@@ -32,7 +35,12 @@ final class VideoPanel {
             "googletagmanager.com", "googletagservices.com", "adservice.google.com", "imasdk.googleapis.com",
             "ads.youtube.com", "adnxs.com", "amazon-adsystem.com", "criteo.com", "criteo.net", "taboola.com",
             "outbrain.com", "scorecardresearch.com", "moatads.com", "adsrvr.org", "pubmatic.com", "rubiconproject.com",
-            "openx.net", "smartadserver.com", "yieldmo.com", "adcolony.com", "unityads.unity3d.com", "applovin.com"
+            "openx.net", "smartadserver.com", "yieldmo.com", "adcolony.com", "unityads.unity3d.com", "applovin.com",
+            // متتبعات ونوافذ منبثقة شائعة (على نهج حماية Brave)
+            "adform.net", "bidswitch.net", "casalemedia.com", "3lift.com", "sharethrough.com", "teads.tv", "mgid.com",
+            "propellerads.com", "popads.net", "popcash.net", "exoclick.com", "adsterra.com", "hotjar.com", "clarity.ms",
+            "quantserve.com", "mc.yandex.ru", "an.yandex.ru", "connect.facebook.net", "ads-twitter.com",
+            "analytics.tiktok.com", "bat.bing.com", "snap.licdn.com", "app-measurement.com"
     };
     /** مسارات إعلانات يوتيوب نفسه (تُحجب جزئيًا؛ بعض إعلانات يوتيوب تأتي من نفس خوادم الفيديو) */
     private static final String[] AD_PATHS = {"/pagead/", "/api/stats/ads", "/ptracking", "/get_midroll_", "ad_break"};
@@ -44,6 +52,7 @@ final class VideoPanel {
     private final View driveCover;         // غطاء أثناء القيادة
     private final TextView toggleLabel;
     private TextView status;
+    private android.widget.EditText address;
     private boolean full, moving;
     private View customView;
     private WebChromeClient.CustomViewCallback customCb;
@@ -80,12 +89,17 @@ final class VideoPanel {
             }
 
             @Override public WebResourceResponse shouldInterceptRequest(WebView v, WebResourceRequest r) {
-                return isAd(r.getUrl()) ? LiveMap.blocked() : null;
+                Uri u = r.getUrl();
+                if (LiveMap.ORIGIN_HOST.equals(u.getHost())) return LiveMap.asset(act, u.getPath()); // صفحة البداية
+                return isAd(u) ? LiveMap.blocked() : null;
             }
 
             @Override public void onPageStarted(WebView v, String url, android.graphics.Bitmap icon) {
                 if (status != null) status.setVisibility(View.GONE);
+                showAddress(url);
             }
+
+            @Override public void onPageFinished(WebView v, String url) { showAddress(url); }
 
             @Override public void onReceivedError(WebView v, WebResourceRequest r, android.webkit.WebResourceError e) {
                 if (android.os.Build.VERSION.SDK_INT >= 23 && r.isForMainFrame())
@@ -114,9 +128,53 @@ final class VideoPanel {
             @Override public void onHideCustomView() { hideCustom(); }
         });
 
-        String saved = Lang.prefs(act).getString("video_url", HOME);
+        String saved = Lang.prefs(act).getString("browser_url", HOME);
         web.loadUrl(saved != null && saved.startsWith("https://") ? saved : HOME);
     }
+
+    /** شريط العنوان: كتابة عنوان أو بحث، و«انتقال» من لوحة المفاتيح يفتحه */
+    void setAddressBar(android.widget.EditText e) {
+        address = e;
+        e.setOnEditorActionListener((tv, actionId, ev) -> {
+            open(tv.getText().toString());
+            tv.clearFocus();
+            android.view.inputmethod.InputMethodManager im =
+                    (android.view.inputmethod.InputMethodManager) act.getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+            if (im != null) im.hideSoftInputFromWindow(tv.getWindowToken(), 0);
+            return true;
+        });
+        showAddress(web.getUrl());
+    }
+
+    /** يحوّل ما كُتب إلى عنوان: موقع إن كان يشبه عنوانًا، وإلا بحث في Brave Search */
+    static String toUrl(String input) {
+        String q = input == null ? "" : input.trim();
+        if (q.isEmpty()) return HOME;
+        if (q.startsWith("https://")) return q;
+        if (q.startsWith("http://")) return "https://" + q.substring(7); // لا اتصال غير مشفّر
+        boolean looksLikeHost = !q.contains(" ") && q.contains(".") && !q.endsWith(".")
+                && q.matches("[\\p{L}\\p{N}.-]+(:\\d+)?(/.*)?");
+        if (looksLikeHost) return "https://" + q;
+        try {
+            return SEARCH + java.net.URLEncoder.encode(q, "UTF-8");
+        } catch (java.io.UnsupportedEncodingException e) {
+            return HOME;
+        }
+    }
+
+    void open(String input) { web.loadUrl(toUrl(input)); }
+
+    /** يعرض اسم الموقع الحالي في شريط العنوان (فارغ في صفحة البداية ليظهر تلميح البحث) */
+    private void showAddress(String url) {
+        if (address == null || address.hasFocus()) return;
+        Uri u = url == null ? null : Uri.parse(url);
+        String host = u == null || u.getHost() == null || LiveMap.ORIGIN_HOST.equals(u.getHost()) ? "" : u.getHost();
+        if (host.startsWith("www.")) host = host.substring(4);
+        if (host.startsWith("m.")) host = host.substring(2);
+        address.setText(host);
+    }
+
+    void goBack() { if (web.canGoBack()) web.goBack(); else home(); }
 
     /** رسالة الخطأ فوق اللوحة؛ الضغط عليها يعيد التحميل */
     void setStatusView(TextView t) {
@@ -189,11 +247,15 @@ final class VideoPanel {
         moving = m;
         if (m && isFull()) { hideCustom(); if (full) toggle(); }
         driveCover.setVisibility(m ? View.VISIBLE : View.GONE);
+        if (address != null) { // لا كتابة أثناء القيادة
+            if (m) address.clearFocus();
+            address.setEnabled(!m);
+        }
     }
 
     void pause() {
         String u = web.getUrl();
-        if (u != null && u.startsWith("https://")) Lang.prefs(act).edit().putString("video_url", u).apply();
+        if (u != null && u.startsWith("https://")) Lang.prefs(act).edit().putString("browser_url", u).apply();
     }
 
     void destroy() { web.destroy(); }

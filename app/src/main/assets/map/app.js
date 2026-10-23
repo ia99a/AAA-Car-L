@@ -8,26 +8,31 @@ var map = L.map('map', {zoomControl:false, attributionControl:true, zoomSnap:0.5
   .setView([24.7136, 46.6753], MINI ? 15 : 16);
 map.attributionControl.setPrefix(false);
 
-// مصادر الخريطة بالترتيب: إن فشل الأول تمامًا ننتقل للتالي.
+// مصادر الخريطة بالترتيب، كلها بلا مفتاح API: إن فشل الأول تمامًا ننتقل للتالي.
+// (CARTO صارت تضع علامة «API KEY REQUIRED» على بلاطاتها منذ أغسطس ٢٠٢٦، فلم تعد مستخدمة.)
 // حالة التحميل تُبلَّغ للتطبيق عبر عنوان الصفحة فقط (بلا أي جسر بين الصفحة والتطبيق).
+var ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/';
+var OSM = {url:'https://tile.openstreetmap.org/{z}/{x}/{y}.png', o:{maxZoom:19, attribution:'&copy; OpenStreetMap'}};
 var PROVIDERS = LIGHT ? [
-  {url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
-   o:{subdomains:'abcd', maxZoom:19, attribution:'&copy; OpenStreetMap &copy; CARTO'}},
-  {url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
-   o:{maxZoom:19, attribution:'&copy; Esri'}}
+  {url:ESRI + 'World_Street_Map/MapServer/tile/{z}/{y}/{x}', o:{maxZoom:19, attribution:'&copy; Esri'}},
+  OSM
 ] : [
-  {url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-   o:{subdomains:'abcd', maxZoom:19, attribution:'&copy; OpenStreetMap &copy; CARTO'}},
-  {url:'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-   o:{maxNativeZoom:16, maxZoom:19, attribution:'&copy; Esri'}}
+  {url:ESRI + 'Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', o:{maxNativeZoom:16, maxZoom:19, attribution:'&copy; Esri'},
+   labels:ESRI + 'Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}'},
+  // الاحتياطي: خريطة OpenStreetMap العادية معكوسة الألوان لتصير داكنة
+  {url:OSM.url, o:{maxZoom:19, attribution:'&copy; OpenStreetMap', className:'osm-dark'}}
 ];
-var tiles = null, provider = 0, loaded = 0, failed = 0;
+var tiles = null, labels = null, provider = 0, loaded = 0, failed = 0;
 function useProvider(i){
   if (tiles) map.removeLayer(tiles);
+  if (labels) { map.removeLayer(labels); labels = null; }
   provider = i; loaded = 0; failed = 0;
   // أداء: بلاطات عادية (لا مضاعفة الدقة)، وتحميل بعد توقف الحركة، واحتفاظ بصفّين حول الشاشة
-  var o = PROVIDERS[i].o; o.updateWhenIdle = true; o.updateWhenZooming = false; o.keepBuffer = 2;
-  tiles = L.tileLayer(PROVIDERS[i].url, o).addTo(map);
+  var p = PROVIDERS[i], o = {};
+  for (var k in p.o) o[k] = p.o[k];
+  o.updateWhenIdle = true; o.updateWhenZooming = false; o.keepBuffer = 2;
+  tiles = L.tileLayer(p.url, o).addTo(map);
+  if (p.labels) labels = L.tileLayer(p.labels, {maxNativeZoom:16, maxZoom:19, updateWhenIdle:true, keepBuffer:2, pane:'overlayPane'}).addTo(map);
   tiles.on('tileload', function(){ if (++loaded === 1) document.title = 'tiles:ok:' + i; });
   tiles.on('tileerror', function(){
     if (loaded > 0 || ++failed < 6) return;

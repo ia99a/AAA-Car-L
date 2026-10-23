@@ -70,7 +70,7 @@
     <string name="alert_bump">Speed bump</string>
     <string name="video_large">Full screen</string>
     <string name="video_small">Shrink</string>
-    <string name="video_home">YouTube home</string>
+    <string name="video_home">Start page</string>
     <string name="video_open_brave">Open in Brave</string>
     <string name="video_driving">Picture hidden while driving\nSound keeps playing</string>
     <string name="set_prayer_alerts">Prayer alerts</string>
@@ -114,7 +114,7 @@
     <string name="map_err_server">Server error (code %1$d)</string>
     <string name="map_err_dns">No internet, or the Private DNS setting is wrong</string>
     <string name="map_err_connect">Could not connect, the internet is weak or blocked</string>
-    <string name="video_err">YouTube could not open\n%1$s\nTap to retry</string>
+    <string name="video_err">The page could not open\n%1$s\nTap to retry</string>
     <string name="brave_failed">Could not open Brave</string>
     <string name="set_home">Home screen</string>
     <string name="set_bg">Background</string>
@@ -132,7 +132,7 @@
     <string name="set_elements_desc">Tap an item to show or hide it</string>
     <string name="el_clock">Clock</string>
     <string name="el_speed">Speed</string>
-    <string name="el_video">Video</string>
+    <string name="el_video">Browser</string>
     <string name="el_dock">Bottom bar</string>
     <string name="set_more">More</string>
     <string name="set_webview">System WebView</string>
@@ -171,4 +171,6 @@
     <string name="el_iqama">Iqama timer</string>
     <string name="iq_in">Iqama in</string>
     <string name="iq_done">Prayer started</string>
+    <string name="video_url_hint">Search with Brave or type an address</string>
+    <string name="video_back">Back</string>
 </resources>

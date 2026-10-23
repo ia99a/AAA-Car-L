@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<!-- لا سكربتات إلا من ملفات الصفحة نفسها، والصور (البلاطات) من CARTO أو Esri فقط -->
+<!-- لا سكربتات إلا من ملفات الصفحة نفسها، والصور (البلاطات) من Esri أو OpenStreetMap فقط -->
 <meta http-equiv="Content-Security-Policy"
-      content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.basemaps.cartocdn.com https://server.arcgisonline.com;">
+      content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://server.arcgisonline.com https://tile.openstreetmap.org;">
 <meta name="referrer" content="origin">
 <link rel="stylesheet" href="leaflet.css">
 <style>
@@ -18,6 +18,7 @@
   .hz svg{width:14px;height:14px;fill:#fff}
   .cam{background:#e5534b}
   .bump{background:#eba53c}
+  .osm-dark{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9) saturate(.35)}
   .mini .leaflet-control-attribution{font-size:7px;padding:0 3px}
   .light #meArrow path{fill:#1a73e8;stroke:#ffffff}
   .mini.light, .mini.light body, .mini.light #map, .mini.light .leaflet-container{background:#e9e5dc}
