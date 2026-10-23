@@ -94,11 +94,7 @@ final class LiveMap implements LocationListener {
 
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);           // لازم لمكتبة الخريطة المحلية فقط
-        s.setAllowFileAccess(false);            // لا وصول لملفات الجهاز (الأصول المضمّنة مستثناة)
-        s.setAllowContentAccess(false);
-        s.setGeolocationEnabled(false);         // الموقع يأتي من التطبيق، لا من الصفحة
-        s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        s.setSupportMultipleWindows(false);
+        VideoPanel.harden(s);                   // بلا ملفات ولا موقع من الصفحة (الموقع يأتي من التطبيق)
         s.setDomStorageEnabled(false);
         s.setBuiltInZoomControls(false);
         if (android.os.Build.VERSION.SDK_INT >= 26) s.setSafeBrowsingEnabled(true);
@@ -113,7 +109,7 @@ final class LiveMap implements LocationListener {
                 Uri u = r.getUrl();
                 String host = u.getHost() == null ? "" : u.getHost().toLowerCase(Locale.ROOT);
                 if (!"https".equals(u.getScheme())) return blocked();
-                if (ORIGIN_HOST.equals(host)) return asset(act, u.getPath());
+                if (ORIGIN_HOST.equals(host)) return mapAsset(act, u.getPath());
                 return isTileHost(host) ? null : blocked();
             }
 
@@ -140,7 +136,7 @@ final class LiveMap implements LocationListener {
             }
         });
         // حالة البلاطات تصل عبر عنوان الصفحة: tiles:ok أو tiles:fail
-        web.setWebChromeClient(new android.webkit.WebChromeClient() {
+        web.setWebChromeClient(new VideoPanel.DenyChrome() {
             @Override public void onReceivedTitle(WebView v, String title) {
                 if (title == null) return;
                 if (title.startsWith("tiles:ok")) {
@@ -166,6 +162,11 @@ final class LiveMap implements LocationListener {
         if (!display) return;
         lastError = null;
         if (pageReady) web.evaluateJavascript("retryTiles()", null); else web.loadUrl(PAGE);
+    }
+
+    /** صفحات الخريطة لا تُحمِّل إلا ملفات مجلد map */
+    static WebResourceResponse mapAsset(android.content.Context c, String path) {
+        return path != null && path.startsWith("/map/") ? asset(c, path) : blocked();
     }
 
     static boolean isTileHost(String host) {

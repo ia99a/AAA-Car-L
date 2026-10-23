@@ -1028,6 +1028,50 @@
                         android:textSize="12sp" />
                 </LinearLayout>
             </LinearLayout>
+
+            <!-- خصوصية: مسح السجل والكوكيز وبيانات المواقع من المتصفح المدمج -->
+            <LinearLayout
+                android:id="@+id/row_clear_browser"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/button_bg"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_clear" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/set_clear_browser"
+                        android:textColor="@color/ink"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                                                android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/set_clear_browser_desc"
+                        android:textColor="@color/ink_faint"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </LinearLayout>
             </LinearLayout>
         </LinearLayout>
 

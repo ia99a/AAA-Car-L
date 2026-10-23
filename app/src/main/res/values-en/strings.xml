@@ -173,4 +173,8 @@
     <string name="iq_done">Prayer started</string>
     <string name="video_url_hint">Search with Brave or type an address</string>
     <string name="video_back">Back</string>
+    <string name="set_clear_browser">Clear browser data</string>
+    <string name="set_clear_browser_desc">History, cookies and site data</string>
+    <string name="browser_cleared">Browser data cleared</string>
+    <string name="net_blocked">Local network addresses are blocked in the built-in browser</string>
 </resources>

@@ -53,6 +53,13 @@ final class VideoPanel {
     private final TextView toggleLabel;
     private TextView status;
     private android.widget.EditText address;
+    private boolean wipeHistory;
+
+    /** بعد مسح البيانات من الإعدادات: نرجع لصفحة البداية بلا سجل */
+    void reset() {
+        wipeHistory = true;
+        web.loadUrl(HOME);
+    }
     private boolean full, moving;
     private View customView;
     private WebChromeClient.CustomViewCallback customCb;
@@ -65,16 +72,9 @@ final class VideoPanel {
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);        // يوتيوب لا يعمل بدونه
         s.setDomStorageEnabled(true);
-        s.setAllowFileAccess(false);
-        s.setAllowContentAccess(false);
-        s.setGeolocationEnabled(false);
-        s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        s.setSupportMultipleWindows(false);  // لا نوافذ منبثقة
-        s.setJavaScriptCanOpenWindowsAutomatically(false);
+        harden(s);                           // بلا ملفات، بلا نوافذ منبثقة، https فقط، تصفح آمن
         s.setMediaPlaybackRequiresUserGesture(true);
         s.setSavePassword(false);
-        s.setSaveFormData(false);
-        if (android.os.Build.VERSION.SDK_INT >= 26) s.setSafeBrowsingEnabled(true);
         CookieManager.getInstance().setAcceptThirdPartyCookies(web, false);
         // يوتيوب يقدّم نسخة محدودة (أو لا يعمل) حين يعرف أنه داخل WebView؛ نعرّف اللوحة كمتصفح Chrome للجوال
         String ua = s.getUserAgentString();
@@ -85,12 +85,25 @@ final class VideoPanel {
             @Override public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest r) {
                 String scheme = r.getUrl().getScheme();
                 // https فقط داخل اللوحة؛ روابط التطبيقات (intent:، market: ...) تُتجاهل
-                return !"https".equalsIgnoreCase(scheme);
+                if (!"https".equalsIgnoreCase(scheme)) return true;
+                if (NetGuard.isPrivateHost(r.getUrl().getHost()) && !LiveMap.ORIGIN_HOST.equals(r.getUrl().getHost())) {
+                    if (r.isForMainFrame()) showError(act.getString(R.string.net_blocked));
+                    return true; // لا وصول لأجهزة الشبكة المحلية
+                }
+                return false;
             }
 
             @Override public WebResourceResponse shouldInterceptRequest(WebView v, WebResourceRequest r) {
                 Uri u = r.getUrl();
-                if (LiveMap.ORIGIN_HOST.equals(u.getHost())) return LiveMap.asset(act, u.getPath()); // صفحة البداية
+                String host = u.getHost();
+                if (LiveMap.ORIGIN_HOST.equals(host)) { // صفحة البداية فقط، لا ملفات الخريطة
+                    String path = u.getPath();
+                    return path != null && path.startsWith("/browser/") ? LiveMap.asset(act, path) : LiveMap.blocked();
+                }
+                if (!"https".equalsIgnoreCase(u.getScheme()) && !"data".equalsIgnoreCase(u.getScheme())
+                        && !"blob".equalsIgnoreCase(u.getScheme())) return LiveMap.blocked();
+                if (NetGuard.isPrivateHost(host) && !"data".equalsIgnoreCase(u.getScheme()) && !"blob".equalsIgnoreCase(u.getScheme()))
+                    return LiveMap.blocked();
                 return isAd(u) ? LiveMap.blocked() : null;
             }
 
@@ -99,7 +112,10 @@ final class VideoPanel {
                 showAddress(url);
             }
 
-            @Override public void onPageFinished(WebView v, String url) { showAddress(url); }
+            @Override public void onPageFinished(WebView v, String url) {
+                showAddress(url);
+                if (wipeHistory) { wipeHistory = false; v.clearHistory(); } // بعد «مسح بيانات المتصفح»
+            }
 
             @Override public void onReceivedError(WebView v, WebResourceRequest r, android.webkit.WebResourceError e) {
                 if (android.os.Build.VERSION.SDK_INT >= 23 && r.isForMainFrame())
@@ -116,7 +132,7 @@ final class VideoPanel {
                 showError(act.getString(R.string.map_err_ssl));
             }
         });
-        web.setWebChromeClient(new WebChromeClient() {
+        web.setWebChromeClient(new DenyChrome() {
             // ملء الشاشة من زر يوتيوب نفسه
             @Override public void onShowCustomView(View view, CustomViewCallback cb) {
                 if (moving) { cb.onCustomViewHidden(); return; }
@@ -129,7 +145,34 @@ final class VideoPanel {
         });
 
         String saved = Lang.prefs(act).getString("browser_url", HOME);
-        web.loadUrl(saved != null && saved.startsWith("https://") ? saved : HOME);
+        boolean ok = saved != null && saved.startsWith("https://") && !NetGuard.isPrivateHost(Uri.parse(saved).getHost());
+        web.loadUrl(ok || HOME.equals(saved) ? saved : HOME);
+    }
+
+
+    /** إعدادات أمان مشتركة لكل WebView في التطبيق */
+    static void harden(WebSettings s) {
+        s.setAllowFileAccess(false);
+        s.setAllowContentAccess(false);
+        s.setAllowFileAccessFromFileURLs(false);
+        s.setAllowUniversalAccessFromFileURLs(false);
+        s.setGeolocationEnabled(false);
+        s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+        s.setSupportMultipleWindows(false);
+        s.setJavaScriptCanOpenWindowsAutomatically(false);
+        s.setSaveFormData(false);
+        if (android.os.Build.VERSION.SDK_INT >= 26) s.setSafeBrowsingEnabled(true);
+    }
+
+    /** يرفض كل طلبات الصلاحيات من الصفحات: كاميرا، ميكروفون، موقع، ملفات */
+    static class DenyChrome extends WebChromeClient {
+        @Override public void onPermissionRequest(android.webkit.PermissionRequest r) { r.deny(); }
+        @Override public void onGeolocationPermissionsShowPrompt(String origin, android.webkit.GeolocationPermissions.Callback cb) {
+            cb.invoke(origin, false, false);
+        }
+        @Override public boolean onShowFileChooser(WebView v, android.webkit.ValueCallback<Uri[]> cb, FileChooserParams p) {
+            return false;
+        }
     }
 
     /** شريط العنوان: كتابة عنوان أو بحث، و«انتقال» من لوحة المفاتيح يفتحه */

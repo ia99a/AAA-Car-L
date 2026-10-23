@@ -177,4 +177,8 @@
     <string name="iq_done">أقيمت الصلاة</string>
     <string name="video_url_hint">ابحث في Brave أو اكتب عنوانًا</string>
     <string name="video_back">رجوع</string>
+    <string name="set_clear_browser">مسح بيانات المتصفح</string>
+    <string name="set_clear_browser_desc">السجل والكوكيز وبيانات المواقع</string>
+    <string name="browser_cleared">مُسحت بيانات المتصفح</string>
+    <string name="net_blocked">عناوين الشبكة المحلية محجوبة في المتصفح المدمج</string>
 </resources>

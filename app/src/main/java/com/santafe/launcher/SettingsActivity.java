@@ -134,6 +134,7 @@ public class SettingsActivity extends Activity {
 
         findViewById(R.id.row_adblock).setOnClickListener(v -> AdBlock.setup(this));
         bindWebView();
+        findViewById(R.id.row_clear_browser).setOnClickListener(v -> clearBrowser());
 
         findViewById(R.id.row_system).setOnClickListener(v -> {
             try { startActivity(new Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); }
@@ -466,6 +467,21 @@ public class SettingsActivity extends Activity {
                 Toast.makeText(this, R.string.no_store, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    /** يمسح السجل والكوكيز والذاكرة المؤقتة وبيانات المواقع، والرئيسية تبدأ من صفحة البداية */
+    private void clearBrowser() {
+        android.webkit.CookieManager cm = android.webkit.CookieManager.getInstance();
+        cm.removeAllCookies(null);
+        cm.flush();
+        android.webkit.WebStorage.getInstance().deleteAllData();
+        android.webkit.WebView w = new android.webkit.WebView(this);
+        w.clearCache(true);
+        w.clearFormData();
+        w.clearHistory();
+        w.destroy();
+        Lang.prefs(this).edit().remove("browser_url").putBoolean("browser_reset", true).apply();
+        Toast.makeText(this, R.string.browser_cleared, Toast.LENGTH_SHORT).show();
     }
 
     private void saveTools() {

@@ -207,6 +207,10 @@ public class MainActivity extends Activity {
         bindCard(cardMaps, MAPS_PKG, R.string.maps_sub);
         bindCard(cardHudhud, hudhudPkg, R.string.hudhud_sub);
         applyHomeItems();
+        if (prefs.getBoolean("browser_reset", false)) {
+            prefs.edit().remove("browser_reset").apply();
+            if (video != null) video.reset();
+        }
         // البار والشريط يُعاد بناؤهما فقط إن تغيّرت محتوياتهما (تحميل الأيقونات بطيء نسبيًا)
         String sig = dockSignature();
         if (!sig.equals(builtSig)) { builtSig = sig; buildDock(); buildRail(); }

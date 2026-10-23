@@ -31,13 +31,8 @@ final class MiniMap {
         this.web = web;
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
-        s.setAllowFileAccess(false);
-        s.setAllowContentAccess(false);
-        s.setGeolocationEnabled(false);
-        s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        s.setSupportMultipleWindows(false);
         s.setDomStorageEnabled(false);
-        if (android.os.Build.VERSION.SDK_INT >= 26) s.setSafeBrowsingEnabled(true);
+        VideoPanel.harden(s);
         web.setBackgroundColor(0x00000000);
         web.setVisibility(View.INVISIBLE);
         web.setWebViewClient(new WebViewClient() {
@@ -47,7 +42,7 @@ final class MiniMap {
                 Uri u = r.getUrl();
                 String host = u.getHost() == null ? "" : u.getHost().toLowerCase(Locale.ROOT);
                 if (!"https".equals(u.getScheme())) return LiveMap.blocked();
-                if (LiveMap.ORIGIN_HOST.equals(host)) return LiveMap.asset(act, u.getPath());
+                if (LiveMap.ORIGIN_HOST.equals(host)) return LiveMap.mapAsset(act, u.getPath());
                 return LiveMap.isTileHost(host) ? null : LiveMap.blocked();
             }
 
@@ -62,7 +57,7 @@ final class MiniMap {
                 h.cancel();
             }
         });
-        web.setWebChromeClient(new WebChromeClient() {
+        web.setWebChromeClient(new VideoPanel.DenyChrome() {
             @Override public void onReceivedTitle(WebView v, String title) {
                 if (title != null && title.startsWith("tiles:ok") && !shown) {
                     shown = true;
