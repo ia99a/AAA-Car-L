@@ -107,4 +107,17 @@ public class PrayerActivity extends Activity {
             return "";
         }
     }
+
+    // شريط السائق العائم (وضع هدهد) يختفي فوق شاشات المشغّل
+    @Override
+    protected void onResume() {
+        super.onResume();
+        OverlayService.suppress(true);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        OverlayService.suppress(false);
+    }
 }

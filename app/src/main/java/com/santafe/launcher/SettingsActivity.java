@@ -133,8 +133,14 @@ public class SettingsActivity extends Activity {
         buildHomeSection();
 
         findViewById(R.id.row_adblock).setOnClickListener(v -> AdBlock.setup(this));
-        bindWebView();
-        findViewById(R.id.row_clear_browser).setOnClickListener(v -> clearBrowser());
+        findViewById(R.id.row_brave_window).setOnClickListener(v -> {
+            try { // خيارات المطوّر: «تفعيل النوافذ ذات الأشكال الحرة» و«فرض قابلية تغيير حجم الأنشطة»
+                startActivity(new Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                Toast.makeText(this, R.string.brave_window_howto, Toast.LENGTH_LONG).show();
+            } catch (Exception e) {
+                Toast.makeText(this, R.string.brave_window_howto, Toast.LENGTH_LONG).show();
+            }
+        });
 
         findViewById(R.id.row_system).setOnClickListener(v -> {
             try { startActivity(new Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); }
@@ -180,8 +186,24 @@ public class SettingsActivity extends Activity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        saveTools();
+        OverlayService.suppress(false);
+        OverlayService.sync(this); // الأدوات أو الشفافية قد تغيّرت: يُعاد بناء الشريط العائم
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
+        OverlayService.suppress(true);
+        bindBraveWindow();
+        if (paintBg != null) paintBg.run();
+        // رجعنا من صفحة الإذن: نكمل تفعيل وضع هدهد
+        if (Home.hudhudMode(this)) {
+            if (OverlayService.canDraw(this)) OverlayService.sync(this);
+            else Toast.makeText(this, R.string.overlay_permission_hint, Toast.LENGTH_LONG).show();
+        }
         // نحدّث حالة الحجب عند الرجوع من إعدادات الشبكة
         boolean on = AdBlock.isOn(this);
         ((ImageView) findViewById(R.id.adblock_icon)).setColorFilter(getColor(on ? R.color.green : R.color.ink_soft));
@@ -200,6 +222,42 @@ public class SettingsActivity extends Activity {
     protected void onDestroy() {
         if (player != null) { try { player.release(); } catch (Exception ignored) { } player = null; }
         super.onDestroy();
+    }
+
+    // ───────── وضع هدهد ─────────
+
+    private Runnable paintBg;
+
+    /**
+     * وضع هدهد: يحتاج تطبيق هدهد مثبتًا، وإذن «الظهور فوق التطبيقات» ليطفو شريط السائق فوقه.
+     * إن لم يُمنح الإذن نفتح صفحته، ونكمل التفعيل تلقائيًا عند الرجوع.
+     */
+    private void enableHudhudMode() {
+        if (OverlayService.hudhudPackage(this) == null) {
+            Toast.makeText(this, R.string.hudhud_missing, Toast.LENGTH_LONG).show();
+            return;
+        }
+        Home.setHudhudMode(this, true);
+        paintBg.run();
+        if (!OverlayService.canDraw(this)) {
+            Toast.makeText(this, R.string.overlay_permission_hint, Toast.LENGTH_LONG).show();
+            try {
+                startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName())));
+            } catch (Exception e) {
+                startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
+            }
+            return;
+        }
+        OverlayService.sync(this);
+        Toast.makeText(this, R.string.hudhud_mode_on, Toast.LENGTH_LONG).show();
+    }
+
+    /** حالة نافذة Brave الصغيرة: مدعومة أم تحتاج تفعيلًا من خيارات المطوّر */
+    private void bindBraveWindow() {
+        TextView st = findViewById(R.id.brave_window_state);
+        boolean ok = BraveWindow.freeformSupported(this);
+        st.setText(ok ? R.string.brave_window_ok : R.string.brave_window_off);
+        st.setTextColor(getColor(ok ? R.color.green : R.color.orange));
     }
 
     // ───────── الشاشة الرئيسية ─────────
@@ -226,17 +284,15 @@ public class SettingsActivity extends Activity {
     private void buildHomeSection() {
         float dp = getResources().getDisplayMetrics().density;
         // الخلفية
-        View bgMap = findViewById(R.id.bg_map), bgPat = findViewById(R.id.bg_pattern);
-        View colorsRow = findViewById(R.id.row_bg_colors);
-        Runnable paintBg = () -> {
-            boolean map = Home.mapBackground(this);
-            bgMap.setSelected(map);
-            bgPat.setSelected(!map);
-            colorsRow.setAlpha(map ? 0.55f : 1f); // النقش يظهر خلف الخريطة حتى تتحمّل، فاللون مفيد في الحالتين
+        View bgHud = findViewById(R.id.bg_hudhud), bgPat = findViewById(R.id.bg_pattern);
+        paintBg = () -> {
+            boolean hud = Home.hudhudMode(this);
+            bgHud.setSelected(hud);
+            bgPat.setSelected(!hud);
         };
         paintBg.run();
-        bgMap.setOnClickListener(v -> { Home.setMapBackground(this, true); paintBg.run(); });
-        bgPat.setOnClickListener(v -> { Home.setMapBackground(this, false); paintBg.run(); });
+        bgHud.setOnClickListener(v -> enableHudhudMode());
+        bgPat.setOnClickListener(v -> { Home.setHudhudMode(this, false); OverlayService.sync(this); paintBg.run(); });
 
         // ألوان النقش: دوائر صغيرة بلونَي كل نمط
         android.widget.LinearLayout colors = findViewById(R.id.bg_colors);
@@ -395,27 +451,6 @@ public class SettingsActivity extends Activity {
         }
         single(R.id.speed_limit_opts, limitLabels, sel, i -> p.edit().putInt("speed_limit", limits[i]).apply());
 
-        // رادار الكاميرات: ثلاثة مفاتيح مستقلة
-        String[] keys = {"radar_cam", "radar_bump", "radar_sound"};
-        int[] names = {R.string.radar_cams, R.string.radar_bumps, R.string.radar_sound};
-        android.widget.LinearLayout radar = findViewById(R.id.radar_opts);
-        for (int i = 0; i < keys.length; i++) {
-            final String key = keys[i];
-            TextView c = chip(getString(names[i]), p.getBoolean(key, true), 38, false);
-            if (i > 0) ((android.widget.LinearLayout.LayoutParams) c.getLayoutParams()).setMarginStart((int) (6 * dp));
-            c.setOnClickListener(v -> {
-                boolean on = !p.getBoolean(key, true);
-                p.edit().putBoolean(key, on).apply();
-                v.setSelected(on);
-            });
-            radar.addView(c);
-        }
-
-        int[] dists = {300, 500, 800};
-        int curDist = Looks.radarDistance(this), dsel = 1;
-        CharSequence[] distLabels = new CharSequence[dists.length];
-        for (int i = 0; i < dists.length; i++) { distLabels[i] = Lang.meters(this, dists[i]); if (dists[i] == curDist) dsel = i; }
-        single(R.id.radar_dist_opts, distLabels, dsel, i -> p.edit().putInt("radar_dist", dists[i]).apply());
     }
 
     /** خرائط قوقل أو هدهد: أربعة أوضاع، واحد منها مختار */
@@ -445,54 +480,11 @@ public class SettingsActivity extends Activity {
         }
     }
 
-    /** نسخة متصفح النظام (WebView): الخريطة والفيديو يعتمدان عليه، والقديم جدًا لا يشغّل يوتيوب */
-    private void bindWebView() {
-        TextView st = findViewById(R.id.webview_state);
-        String pkg = null, ver = null;
-        if (android.os.Build.VERSION.SDK_INT >= 26) {
-            android.content.pm.PackageInfo pi = android.webkit.WebView.getCurrentWebViewPackage();
-            if (pi != null) { pkg = pi.packageName; ver = pi.versionName; }
-        }
-        int major = 0;
-        try { if (ver != null) major = Integer.parseInt(ver.split("\\.")[0]); } catch (NumberFormatException ignored) { }
-        boolean old = major > 0 && major < 100;
-        st.setText(ver == null ? getString(R.string.webview_unknown)
-                : getString(old ? R.string.webview_old : R.string.webview_ok, ver));
-        st.setTextColor(getColor(old ? R.color.orange : R.color.ink_faint));
-        final String target = pkg != null ? pkg : "com.google.android.webview";
-        findViewById(R.id.row_webview).setOnClickListener(v -> {
-            try {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + target)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-            } catch (Exception e) {
-                Toast.makeText(this, R.string.no_store, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    /** يمسح السجل والكوكيز والذاكرة المؤقتة وبيانات المواقع، والرئيسية تبدأ من صفحة البداية */
-    private void clearBrowser() {
-        android.webkit.CookieManager cm = android.webkit.CookieManager.getInstance();
-        cm.removeAllCookies(null);
-        cm.flush();
-        android.webkit.WebStorage.getInstance().deleteAllData();
-        android.webkit.WebView w = new android.webkit.WebView(this);
-        w.clearCache(true);
-        w.clearFormData();
-        w.clearHistory();
-        w.destroy();
-        Lang.prefs(this).edit().remove("browser_url").putBoolean("browser_reset", true).apply();
-        Toast.makeText(this, R.string.browser_cleared, Toast.LENGTH_SHORT).show();
-    }
-
     private void saveTools() {
         List<String> ordered = new ArrayList<>();
         for (String k : Tools.ALL) if (chosen.contains(k)) ordered.add(k);
         Tools.save(this, ordered);
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        saveTools();
-    }
+
 }

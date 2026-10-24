@@ -4,7 +4,7 @@ import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
 
 /**
- * مظهر بطاقة الساعة ولوحة السرعة، وخيارات الوقت والتاريخ والسرعة ورادار الكاميرات (كلها من الإعدادات).
+ * مظهر بطاقة الساعة ولوحة السرعة، وخيارات الوقت والتاريخ والسرعة (كلها من الإعدادات).
  * «متناسق» يأخذ ألوانه من لون الخلفية المختار، فتبقى الواجهة كلها بطابع واحد.
  */
 final class Looks {
@@ -92,12 +92,4 @@ final class Looks {
 
     /** حد تنبيه السرعة (كم/س)، ٠ = بلا تنبيه */
     static int speedLimit(Context c) { return Lang.prefs(c).getInt("speed_limit", 0); }
-
-    // ───── رادار الكاميرات ─────
-
-    static boolean radarCameras(Context c) { return Lang.prefs(c).getBoolean("radar_cam", true); }
-    static boolean radarBumps(Context c) { return Lang.prefs(c).getBoolean("radar_bump", true); }
-    static boolean radarSound(Context c) { return Lang.prefs(c).getBoolean("radar_sound", true); }
-    /** مسافة تنبيه الكاميرا بالمتر */
-    static int radarDistance(Context c) { return Lang.prefs(c).getInt("radar_dist", 500); }
 }

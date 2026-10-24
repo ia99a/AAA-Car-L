@@ -13,13 +13,6 @@
     <color name="blue">#3B7DDD</color>
     <color name="blue_dark">#2E68C2</color>
     <color name="green">#4CBF6B</color>
-    <color name="red">#E5534B</color>
     <color name="dock">#E61D1F23</color>
     <color name="dock_active">#2D3036</color>
-
-    <color name="map_bg">#191B1F</color>
-    <color name="map_block">#1D2024</color>
-    <color name="map_road">#24272D</color>
-    <color name="map_main_road">#2B2F36</color>
-    <color name="map_label">#555B64</color>
 </resources>

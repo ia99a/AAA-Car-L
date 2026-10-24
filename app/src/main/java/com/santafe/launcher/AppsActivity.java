@@ -277,4 +277,17 @@ public class AppsActivity extends Activity {
         showPage(true);
         assigning = slot; // showPage(true) لا يلغيها
     }
+
+    // شريط السائق العائم (وضع هدهد) يختفي فوق شاشات المشغّل
+    @Override
+    protected void onResume() {
+        super.onResume();
+        OverlayService.suppress(true);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        OverlayService.suppress(false);
+    }
 }

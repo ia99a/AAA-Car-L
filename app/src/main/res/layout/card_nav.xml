@@ -13,28 +13,6 @@
     android:paddingEnd="14dp"
     android:paddingBottom="11dp">
 
-    <!-- وضع «خريطة حية»: خريطة مصغّرة لموقعك، والضغط عليها يفتح التطبيق -->
-    <FrameLayout
-        android:id="@+id/nav_map"
-        android:layout_width="match_parent"
-        android:layout_height="130dp"
-        android:layout_marginBottom="10dp"
-        android:background="@drawable/video_slot_bg"
-        android:visibility="gone">
-
-        <WebView
-            android:id="@+id/nav_map_web"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="invisible" />
-
-        <View
-            android:id="@+id/nav_map_tap"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clickable="true"
-            android:focusable="false" />
-    </FrameLayout>
 
     <LinearLayout
         android:id="@+id/nav_head"

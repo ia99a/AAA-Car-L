@@ -3,14 +3,16 @@
 
     <!-- إذن عادي بلا نافذة موافقة: لمعرفة هل حجب الإعلانات (DNS خاص) مفعّل -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- الإنترنت: بلاطات الخريطة، وبيانات الكاميرات والمطبات، ولوحة الفيديو -->
-    <uses-permission android:name="android.permission.INTERNET" />
-    <!-- الموقع: لتتبع سيارتك على الخريطة وتنبيهات الطريق. يُطلب مرة واحدة، ويعمل التطبيق بدونه -->
+    <!-- الموقع: لعرض سرعتك الحالية من GPS. يُطلب مرة واحدة، ويعمل التطبيق بدونه -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- تنبيهات الصلاة: إشعار بنغمة (أندرويد ١٣+ يطلب الموافقة)، ومنبّه دقيق في وقت الأذان -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- وضع هدهد: شريط السائق يطفو فوق تطبيق هدهد (يمنحه المستخدم من الإعدادات)، كخدمة أمامية بإشعار هادئ -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <!-- أندرويد ١١ فما فوق: رؤية التطبيقات التي لها أيقونة فقط (لعرضها وفتحها)، ولا شيء غيرها -->
     <queries>
@@ -76,6 +78,15 @@
             android:taskAffinity=""
             android:excludeFromRecents="true" />
         <!-- مستقبِل منبّه الصلاة: غير مكشوف، لا يستقبل إلا من منبّه التطبيق نفسه -->
+        <service
+            android:name=".OverlayService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Car launcher driver rail floating over the navigation app" />
+        </service>
+
         <receiver
             android:name=".PrayerAlerts"
             android:exported="false" />
