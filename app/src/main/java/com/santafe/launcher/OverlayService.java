@@ -269,7 +269,7 @@ public class OverlayService extends Service {
         }
         // مستوى أداة الصلاة في الشريط
         int top = railLp.y + prayerItem.getTop() + prayerItem.getHeight() / 2
-                - (int) (15 * getResources().getDisplayMetrics().density);
+                - (int) (17 * getResources().getDisplayMetrics().density); // نصف ارتفاع الفقاعة
         if (prayerItem.getHeight() > 0 && bubbleLp.y != top) {
             bubbleLp.y = top;
             try { wm.updateViewLayout(bubble, bubbleLp); } catch (Exception ignored) { }

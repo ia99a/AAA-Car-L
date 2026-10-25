@@ -24,7 +24,7 @@ sed 's#<manifest xmlns:android="http://schemas.android.com/apk/res/android">#<ma
   "$SRC/AndroidManifest.xml" > "$OUT/AndroidManifest.xml"
 "$AAPT" compile --dir "$SRC/res" -o "$OUT/res.zip"
 "$AAPT" link -o "$OUT/base.apk" -I "$AJ" --manifest "$OUT/AndroidManifest.xml" --java "$OUT/gen" \
-  --min-sdk-version 24 --target-sdk-version 34 --version-code 21 --version-name 3.1 -R "$OUT/res.zip" --auto-add-overlay
+  --min-sdk-version 24 --target-sdk-version 34 --version-code 22 --version-name 3.2 -R "$OUT/res.zip" --auto-add-overlay
 
 # ٢) الكود
 javac -encoding UTF-8 --release 11 -classpath "$AJ" -d "$OUT/classes" \

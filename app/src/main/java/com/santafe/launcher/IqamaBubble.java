@@ -27,16 +27,16 @@ public class IqamaBubble extends View {
         dp = c.getResources().getDisplayMetrics().density;
         float sp = c.getResources().getDisplayMetrics().scaledDensity;
         stroke.setStyle(Paint.Style.STROKE);
-        stroke.setStrokeWidth(Math.max(1, dp));
-        label.setTextSize(10 * sp);
-        digits.setTextSize(15 * sp);
+        stroke.setStrokeWidth(Math.max(1, 1.5f * dp));
+        label.setTextSize(12 * sp);
+        digits.setTextSize(18 * sp);
         digits.setTypeface(Typeface.DEFAULT_BOLD);
         setClickable(true);
         setFocusable(true);
         applyColors();
     }
 
-    private static final float ARROW = 6, PAD = 10, GAP = 6, HEIGHT = 30;
+    private static final float ARROW = 7, PAD = 14, GAP = 10, HEIGHT = 34;
 
     /** النص: label مثل «الإقامة بعد»، و digits مثل «٠٨:٤١» (فارغ عند «أقيمت الصلاة») */
     void set(String labelText, String digitText, boolean gold) {
@@ -60,7 +60,7 @@ public class IqamaBubble extends View {
     private void applyColors() {
         int bg = gold ? 0x2C2416 : 0x1D2A24;
         fill.setColor((alpha << 24) | bg);
-        stroke.setColor(((int) (alpha * (gold ? 0.67f : 0.33f)) << 24) | (gold ? 0xC9A35A : 0x3FBF7F));
+        stroke.setColor(((int) (alpha * (gold ? 0.85f : 0.6f)) << 24) | (gold ? 0xC9A35A : 0x3FBF7F));
         label.setColor(gold ? 0xFFE3C27A : 0xFFA8E3C5);
         digits.setColor(gold ? 0xFFF3DFAE : 0xFFFFFFFF);
     }

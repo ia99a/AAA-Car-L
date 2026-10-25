@@ -443,7 +443,7 @@ public class MainActivity extends Activity {
         float dp = getResources().getDisplayMetrics().density;
         android.widget.FrameLayout.LayoutParams lp = (android.widget.FrameLayout.LayoutParams) bubble.getLayoutParams();
         int left = rl[0] - r[0] + rail.getWidth() + (int) (4 * dp);
-        int top = a[1] - r[1] + prayerItem.getHeight() / 2 - (int) (15 * dp);
+        int top = a[1] - r[1] + prayerItem.getHeight() / 2 - (int) (17 * dp); // نصف ارتفاع الفقاعة
         if (lp.leftMargin != left || lp.topMargin != top) {
             lp.leftMargin = left;
             lp.topMargin = top;
