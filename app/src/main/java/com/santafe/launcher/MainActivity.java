@@ -72,6 +72,7 @@ public class MainActivity extends Activity {
 
     private String hudhudPkg; // يُكتشف تلقائيًا من التطبيقات المثبتة
     private boolean introPlayed;
+    private boolean active; // الشاشة ظاهرة (بين onResume و onPause)
 
     @Override
     protected void attachBaseContext(android.content.Context base) {
@@ -90,6 +91,12 @@ public class MainActivity extends Activity {
         cardMaps = findViewById(R.id.card_maps);
         cardHudhud = findViewById(R.id.card_hudhud);
         railItems = findViewById(R.id.rail_items);
+        // تغيّر حجم أدوات الشريط (إعادة بناء أو تغيّر النص): نعيد وضع الفقاعة بجانب أداة الصلاة
+        railItems.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
+            if (bubble == null || !active) return;
+            if (bubble.getVisibility() == View.VISIBLE) placeBubble();
+            else ui.post(iqamaTick); // كانت تنتظر أول رسم للشريط
+        });
         speedView = findViewById(R.id.speed);
         clockTime = findViewById(R.id.clock_time);
         clockDate = findViewById(R.id.clock_date);
@@ -161,6 +168,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        active = true;
         // تغيّرت اللغة من الإعدادات: نعيد بناء الشاشة باللغة الجديدة
         if (!Lang.get(this).equals(createdLang)) { recreate(); return; }
         OverlayService.suppress(true); // للرئيسية شريطها الخاص
@@ -185,6 +193,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
+        active = false;
         ui.removeCallbacks(ticker);
         ui.removeCallbacks(iqamaTick);
         gps.stop();
@@ -344,6 +353,7 @@ public class MainActivity extends Activity {
 
     private void buildRail() {
         railItems.removeAllViews();
+        if (bubble != null) { bubble.animate().cancel(); bubble.setVisibility(View.GONE); }
         prayerName = prayerTime = null;
         prayerItem = null;
         LayoutInflater inf = LayoutInflater.from(this);
@@ -413,11 +423,16 @@ public class MainActivity extends Activity {
     }
 
     private void showBubble() {
-        placeBubble();
-        if (bubble.getVisibility() == View.VISIBLE) return;
+        // لا تظهر الفقاعة قبل أن يُعرف مكانها: وإلا ظهرت في زاوية الشاشة فوق الشريط وغطّت أيقوناته
+        if (!placeBubble()) { bubble.animate().cancel(); bubble.setVisibility(View.GONE); return; }
+        if (bubble.getVisibility() == View.VISIBLE) {
+            // كانت تختفي (انتهى وقت سابق) ثم احتجناها: نلغي الإخفاء حتى لا تختفي بعد ظهورها
+            if (bubble.getAlpha() < 1f) { bubble.animate().cancel(); bubble.animate().alpha(1f).translationX(0f).setDuration(200).start(); }
+            return;
+        }
         float dp = getResources().getDisplayMetrics().density;
         bubble.setAlpha(0f);
-        bubble.setTranslationX(-16 * dp);
+        bubble.setTranslationX(-8 * dp);
         bubble.setVisibility(View.VISIBLE);
         bubble.animate().alpha(1f).translationX(0f).setDuration(380)
                 .setInterpolator(new DecelerateInterpolator(2f)).start();
@@ -425,30 +440,32 @@ public class MainActivity extends Activity {
 
     private void hideBubble() {
         if (bubble.getVisibility() != View.VISIBLE) return;
+        bubble.animate().cancel();
         bubble.animate().alpha(0f).setDuration(250).withEndAction(() -> bubble.setVisibility(View.GONE)).start();
     }
 
-    /** على حافة الشريط اليسار، في مستوى أداة الصلاة */
-    private void placeBubble() {
-        if (prayerItem == null) return;
-        if (prayerItem.getHeight() == 0) { // لم يُرسم الشريط بعد: نعيد المحاولة بعد أول رسم
-            if (prayerItem.isAttachedToWindow()) prayerItem.post(this::placeBubble);
-            return;
+    /**
+     * على حافة الشريط اليسار، في مستوى أداة الصلاة. يُحسب من مواضع العناصر في التخطيط نفسه
+     * (لا من مكانها على الشاشة) حتى لا تتأثر بحركة دخول الشريط، فلا تقع الفقاعة فوقه أبدًا.
+     * يرجع false إن لم يُرسم الشريط بعد.
+     */
+    private boolean placeBubble() {
+        if (prayerItem == null || prayerItem.getParent() != railItems) return false;
+        View rail = findViewById(R.id.rail), box = (View) rail.getParent();
+        if (prayerItem.getHeight() == 0 || rail.getWidth() == 0) { // لم يُرسم الشريط بعد
+            return false; // تظهر بعد أول رسم للشريط (مستمع التخطيط في onCreate)
         }
-        View root = findViewById(R.id.root), rail = findViewById(R.id.rail);
-        int[] r = new int[2], a = new int[2], rl = new int[2];
-        root.getLocationInWindow(r);
-        prayerItem.getLocationInWindow(a);
-        rail.getLocationInWindow(rl);
         float dp = getResources().getDisplayMetrics().density;
         android.widget.FrameLayout.LayoutParams lp = (android.widget.FrameLayout.LayoutParams) bubble.getLayoutParams();
-        int left = rl[0] - r[0] + rail.getWidth() + (int) (4 * dp);
-        int top = a[1] - r[1] + prayerItem.getHeight() / 2 - (int) (17 * dp); // نصف ارتفاع الفقاعة
+        int left = box.getLeft() + rail.getRight() + (int) (4 * dp);
+        int top = box.getTop() + rail.getTop() + railItems.getTop() + prayerItem.getTop()
+                + prayerItem.getHeight() / 2 - (int) (17 * dp); // نصف ارتفاع الفقاعة
         if (lp.leftMargin != left || lp.topMargin != top) {
             lp.leftMargin = left;
             lp.topMargin = top;
             bubble.setLayoutParams(lp);
         }
+        return true;
     }
 
     /** يحدّث أداة الصلاة: اسم الصلاة القادمة ووقتها */
