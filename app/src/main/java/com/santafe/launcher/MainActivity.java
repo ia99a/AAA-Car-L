@@ -466,11 +466,11 @@ public class MainActivity extends Activity {
             tomorrowTimes = PrayerTimes.forDay(tm, c);
         }
         long t = now.getTimeInMillis();
-        // بين الأذان والإقامة: نعرض «إقامة» مع الوقت الباقي بلون مميز
+        // بين الأذان والإقامة: اسم الصلاة مع الوقت الباقي على الإقامة بالأخضر
         for (int k : PrayerTimes.PRAYERS) {
             long iq = todayTimes[k] + PrayerTimes.IQAMA[k] * 60_000L;
             if (t >= todayTimes[k] && t < iq) {
-                prayerName.setText(R.string.pa_rail_iqama);
+                prayerName.setText(PrayerActivity.NAMES[k]);
                 prayerTime.setText(Lang.left(this, iq - t));
                 prayerTime.setTextColor(getColor(R.color.green));
                 return;

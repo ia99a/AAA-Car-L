@@ -78,7 +78,6 @@
     <string name="pa_adhan_title">حان وقت صلاة %1$s</string>
     <string name="pa_adhan_text">الإقامة %1$s</string>
     <string name="pa_iqama_text">الإقامة بعد ٥ دقائق</string>
-    <string name="pa_rail_iqama">إقامة</string>
     <string name="pa_ch_soon">قبل الأذان</string>
     <string name="pa_ch_adhan">الأذان</string>
     <string name="pa_ch_iqama">قبل الإقامة</string>

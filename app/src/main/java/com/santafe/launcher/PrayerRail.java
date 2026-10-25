@@ -5,7 +5,7 @@ import android.widget.TextView;
 
 import java.util.Calendar;
 
-/** أداة الصلاة في شريط السائق (في الرئيسية وفي الشريط العائم فوق هدهد): الصلاة القادمة، أو «إقامة» مع الوقت الباقي */
+/** أداة الصلاة في شريط السائق (في الرئيسية وفي الشريط العائم فوق هدهد): الصلاة القادمة، أو اسم الصلاة الحالية مع الوقت الباقي على إقامتها */
 final class PrayerRail {
 
     private long[] today, tomorrow;
@@ -34,11 +34,11 @@ final class PrayerRail {
         if (name == null || time == null) return;
         long[] td = today(c);
         long t = System.currentTimeMillis();
-        // بين الأذان والإقامة: «إقامة» مع الوقت الباقي بلون مميز
+        // بين الأذان والإقامة: اسم الصلاة مع الوقت الباقي على الإقامة بالأخضر
         for (int k : PrayerTimes.PRAYERS) {
             long iq = td[k] + PrayerTimes.IQAMA[k] * 60_000L;
             if (t >= td[k] && t < iq) {
-                name.setText(R.string.pa_rail_iqama);
+                name.setText(PrayerActivity.NAMES[k]);
                 time.setText(Lang.left(c, iq - t));
                 time.setTextColor(c.getColor(R.color.green));
                 return;
