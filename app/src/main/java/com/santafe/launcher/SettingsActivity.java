@@ -142,6 +142,28 @@ public class SettingsActivity extends Activity {
             }
         });
 
+        // كبسولة الصوت: تشغيل/إيقاف، وطلب إذن الظهور فوق التطبيقات إن لزم
+        // (مفعّلة وينقصها إذن: الضغط يفتح صفحة الإذن بدل الإيقاف)
+        findViewById(R.id.row_volume_hud).setOnClickListener(v -> {
+            if (Popups.volume(this) && !OverlayService.canDraw(this)) { askOverlay(); return; }
+            boolean on = !Popups.volume(this);
+            Popups.setVolume(this, on);
+            if (on && !OverlayService.canDraw(this)) askOverlay();
+            OverlayService.sync(this);
+            bindPopups();
+        });
+        // كبسولة المكالمات: تحتاج أيضًا إذن الوصول للإشعارات
+        findViewById(R.id.row_call_bar).setOnClickListener(v -> {
+            if (Popups.call(this) && !OverlayService.canDraw(this)) { askOverlay(); return; }
+            if (Popups.call(this) && !Popups.notificationAccess(this)) { askNotificationAccess(); return; }
+            boolean on = !Popups.call(this);
+            Popups.setCall(this, on);
+            if (on && !OverlayService.canDraw(this)) askOverlay();
+            else if (on && !Popups.notificationAccess(this)) askNotificationAccess();
+            CallWatcher.refresh();
+            bindPopups();
+        });
+
         findViewById(R.id.row_system).setOnClickListener(v -> {
             try { startActivity(new Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); }
             catch (Exception ignored) { }
@@ -198,6 +220,8 @@ public class SettingsActivity extends Activity {
         super.onResume();
         OverlayService.suppress(true);
         bindBraveWindow();
+        bindPopups();
+        CallWatcher.refresh();
         if (paintBg != null) paintBg.run();
         // رجعنا من صفحة الإذن: نكمل تفعيل وضع هدهد
         if (Home.hudhudMode(this)) {
@@ -250,6 +274,44 @@ public class SettingsActivity extends Activity {
         }
         OverlayService.sync(this);
         Toast.makeText(this, R.string.hudhud_mode_on, Toast.LENGTH_LONG).show();
+    }
+
+    /** حالة الكبسولتين: مفعّلة، موقفة، أو تحتاج إذنًا */
+    private void bindPopups() {
+        boolean draw = OverlayService.canDraw(this);
+        boolean vol = Popups.volume(this);
+        ((android.widget.Switch) findViewById(R.id.switch_volume_hud)).setChecked(vol);
+        TextView vs = findViewById(R.id.volume_hud_state);
+        vs.setText(!vol ? R.string.set_off : draw ? R.string.set_volume_hud_on : R.string.set_need_overlay);
+        vs.setTextColor(getColor(!vol ? R.color.ink_faint : draw ? R.color.green : R.color.orange));
+        boolean call = Popups.call(this), access = Popups.notificationAccess(this);
+        ((android.widget.Switch) findViewById(R.id.switch_call_bar)).setChecked(call);
+        TextView cs = findViewById(R.id.call_bar_state);
+        cs.setText(!call ? R.string.set_off : !draw ? R.string.set_need_overlay : !access ? R.string.set_need_notif : R.string.set_call_bar_on);
+        cs.setTextColor(getColor(!call ? R.color.ink_faint : draw && access ? R.color.green : R.color.orange));
+    }
+
+    private void askOverlay() {
+        Toast.makeText(this, R.string.set_need_overlay, Toast.LENGTH_LONG).show();
+        try {
+            startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName())));
+        } catch (Exception e) {
+            startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
+        }
+    }
+
+    private void askNotificationAccess() {
+        Toast.makeText(this, R.string.notif_access_hint, Toast.LENGTH_LONG).show();
+        Intent i = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
+        if (android.os.Build.VERSION.SDK_INT >= 30) { // صفحة المشغّل نفسها مباشرة
+            Intent d = new Intent("android.settings.NOTIFICATION_LISTENER_DETAIL_SETTINGS")
+                    .putExtra("android.provider.extra.NOTIFICATION_LISTENER_COMPONENT_NAME",
+                            new android.content.ComponentName(this, CallWatcher.class).flattenToString());
+            try { startActivity(d); return; } catch (Exception ignored) { }
+        }
+        try { startActivity(i); } catch (Exception e) {
+            startActivity(new Intent(Settings.ACTION_SETTINGS));
+        }
     }
 
     /** حالة نافذة Brave الصغيرة: مدعومة أم تحتاج تفعيلًا من خيارات المطوّر */

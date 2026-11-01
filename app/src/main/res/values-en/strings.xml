@@ -142,8 +142,8 @@
     <string name="el_iqama">Iqama timer</string>
     <string name="iq_in">Iqama in</string>
     <string name="iq_done">Prayer started</string>
-    <string name="overlay_channel">Floating driver bar</string>
-    <string name="overlay_title">Driver bar over Hudhud</string>
+    <string name="overlay_channel">Floating bars</string>
+    <string name="overlay_title">AAA Car L floating bars</string>
     <string name="overlay_text">Tap to open Settings</string>
     <string name="hudhud_missing">Hudhud is not installed. Install it, then turn on Hudhud mode</string>
     <string name="brave_sub">Ad-free · small window</string>
@@ -155,4 +155,23 @@
     <string name="brave_window_ok">Supported on this screen</string>
     <string name="brave_window_off">Needs floating windows turned on · Tap</string>
     <string name="brave_window_howto">In Developer options turn on “Enable freeform windows” and “Force activities to be resizable”, then restart the screen</string>
+    <string name="vol_media">Media</string>
+    <string name="vol_call">Call</string>
+    <string name="vol_ring">Ringer</string>
+    <string name="vol_alarm">Alarm</string>
+    <string name="vol_notif">Notifications</string>
+    <string name="vol_system">System</string>
+    <string name="call_incoming">Incoming call</string>
+    <string name="call_answer">Answer</string>
+    <string name="call_end">End call</string>
+    <string name="call_unknown">Unknown number</string>
+    <string name="call_watcher_label">AAA Car L call capsule</string>
+    <string name="set_volume_hud">Volume capsule</string>
+    <string name="set_volume_hud_on">Shows at the top when the volume changes</string>
+    <string name="set_off">Off</string>
+    <string name="set_need_overlay">Needs “Display over other apps”, tap to allow</string>
+    <string name="set_call_bar">Call capsule</string>
+    <string name="set_call_bar_on">Shows at the bottom during calls</string>
+    <string name="set_need_notif">Needs notification access to see calls, tap to allow</string>
+    <string name="notif_access_hint">Turn on AAA Car L in Notification access. It only reads call notifications and stores nothing</string>
 </resources>

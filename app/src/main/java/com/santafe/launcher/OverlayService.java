@@ -40,6 +40,7 @@ public class OverlayService extends Service {
     private LinearLayout rail;
     private WindowManager.LayoutParams railLp;
     private IqamaBubble bubble;
+    private VolumeHud volume; // كبسولة الصوت أعلى الشاشة
     private WindowManager.LayoutParams bubbleLp;
     private View prayerItem;
     private TextView prayerName, prayerTime;
@@ -47,7 +48,7 @@ public class OverlayService extends Service {
     private final Handler h = new Handler(Looper.getMainLooper());
     private java.text.NumberFormat twoDigits;
     private final Runnable tick = new Runnable() {
-        @Override public void run() { refresh(); h.postDelayed(this, nextDelay()); }
+        @Override public void run() { if (rail == null) return; refresh(); h.postDelayed(this, nextDelay()); }
     };
 
     // ───────── التحكم من الشاشات ─────────
@@ -56,11 +57,16 @@ public class OverlayService extends Service {
         return Build.VERSION.SDK_INT < 23 || Settings.canDrawOverlays(c);
     }
 
-    /** يشغّل الشريط العائم إن كان وضع هدهد مفعّلًا والإذن ممنوحًا، ويوقفه غير ذلك */
+    /** هل نحتاج الخدمة: الشريط العائم (وضع هدهد) أو كبسولة الصوت، مع إذن الظهور فوق التطبيقات */
+    static boolean wanted(Context c) {
+        return canDraw(c) && (Home.hudhudMode(c) || Popups.volume(c));
+    }
+
+    /** يشغّل الخدمة إن احتجناها، ويوقفها غير ذلك */
     static void sync(Context c) {
         Context app = c.getApplicationContext();
         Intent i = new Intent(app, OverlayService.class);
-        if (Home.hudhudMode(app) && canDraw(app)) {
+        if (wanted(app)) {
             try {
                 if (Build.VERSION.SDK_INT >= 26) app.startForegroundService(i); else app.startService(i);
             } catch (Exception ignored) { } // بعض الأنظمة ترفض البدء من الخلفية؛ نعيد المحاولة عند العودة للرئيسية
@@ -93,7 +99,7 @@ public class OverlayService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         startForegroundCompat(); // مطلوب بعد كل startForegroundService
-        if (!Home.hudhudMode(this) || !canDraw(this)) { stopSelf(); return START_NOT_STICKY; }
+        if (!wanted(this)) { stopSelf(); return START_NOT_STICKY; }
         if (!signature().equals(builtSig)) rebuild(); // تغيّرت الأدوات أو اللغة أو الشفافية فقط
         return START_STICKY;
     }
@@ -147,7 +153,7 @@ public class OverlayService extends Service {
 
     /** ما يغيّر شكل الشريط العائم */
     private String signature() {
-        return Tools.enabled(this) + "|" + Lang.get(this) + "|" + Looks.opacity(this) + "|" + Home.shown(this, Home.IQAMA)
+        return Home.hudhudMode(this) + "|" + Popups.volume(this) + "|" + Tools.enabled(this) + "|" + Lang.get(this) + "|" + Looks.opacity(this) + "|" + Home.shown(this, Home.IQAMA)
                 + "|" + getResources().getDisplayMetrics().heightPixels;
     }
 
@@ -160,6 +166,8 @@ public class OverlayService extends Service {
         h.removeCallbacks(tick);
         try { if (rail != null) wm.removeView(rail); } catch (Exception ignored) { }
         try { if (bubble != null) wm.removeView(bubble); } catch (Exception ignored) { }
+        if (volume != null) volume.release();
+        volume = null;
         rail = null;
         bubble = null;
         prayerItem = null;
@@ -172,6 +180,12 @@ public class OverlayService extends Service {
         float dp = getResources().getDisplayMetrics().density;
         int screenH = getResources().getDisplayMetrics().heightPixels;
         twoDigits = null;
+
+        // كبسولة الصوت: تعمل فوق كل التطبيقات، ولا تختفي فوق شاشات المشغّل
+        if (Popups.volume(this)) volume = new VolumeHud(ui, wm, overlayType());
+
+        // شريط السائق العائم وفقاعة الإقامة: في وضع هدهد فقط
+        if (!Home.hudhudMode(this)) return;
 
         rail = new LinearLayout(ui);
         rail.setOrientation(LinearLayout.VERTICAL);

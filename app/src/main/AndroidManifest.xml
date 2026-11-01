@@ -84,7 +84,19 @@
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Car launcher driver rail floating over the navigation app" />
+                android:value="Car launcher driver rail and volume capsule floating over the navigation app" />
+        </service>
+
+        <!-- يعرف بالمكالمات من إشعار تطبيق الهاتف لعرض كبسولة المكالمة. لا يربطه إلا النظام (الصلاحية المطلوبة)،
+             ولا يعمل إلا إن منحه المستخدم «الوصول للإشعارات» بنفسه -->
+        <service
+            android:name=".CallWatcher"
+            android:exported="true"
+            android:label="@string/call_watcher_label"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
         </service>
 
         <receiver

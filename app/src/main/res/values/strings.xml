@@ -146,8 +146,8 @@
     <string name="el_iqama">مؤقت الإقامة</string>
     <string name="iq_in">الإقامة بعد</string>
     <string name="iq_done">أقيمت الصلاة</string>
-    <string name="overlay_channel">شريط السائق العائم</string>
-    <string name="overlay_title">شريط السائق فوق هدهد</string>
+    <string name="overlay_channel">النوافذ العائمة</string>
+    <string name="overlay_title">نوافذ AAA Car L العائمة</string>
     <string name="overlay_text">اضغط لفتح الإعدادات</string>
     <string name="hudhud_missing">تطبيق هدهد غير مثبّت. ثبّته من المتجر ثم فعّل وضع هدهد</string>
     <string name="brave_sub">بلا إعلانات · نافذة صغيرة</string>
@@ -159,4 +159,23 @@
     <string name="brave_window_ok">مدعومة في هذه الشاشة</string>
     <string name="brave_window_off">تحتاج تفعيل النوافذ العائمة · اضغط</string>
     <string name="brave_window_howto">في خيارات المطوّر فعّل «النوافذ ذات الأشكال الحرة» و«فرض قابلية تغيير حجم الأنشطة» ثم أعد تشغيل الشاشة</string>
+    <string name="vol_media">الوسائط</string>
+    <string name="vol_call">المكالمة</string>
+    <string name="vol_ring">الرنين</string>
+    <string name="vol_alarm">المنبّه</string>
+    <string name="vol_notif">الإشعارات</string>
+    <string name="vol_system">النظام</string>
+    <string name="call_incoming">مكالمة واردة</string>
+    <string name="call_answer">رد</string>
+    <string name="call_end">إنهاء المكالمة</string>
+    <string name="call_unknown">رقم غير معروف</string>
+    <string name="call_watcher_label">كبسولة المكالمات في AAA Car L</string>
+    <string name="set_volume_hud">كبسولة الصوت</string>
+    <string name="set_volume_hud_on">تظهر أعلى الشاشة عند تغيير الصوت</string>
+    <string name="set_off">موقفة</string>
+    <string name="set_need_overlay">تحتاج إذن «الظهور فوق التطبيقات»، اضغط للسماح</string>
+    <string name="set_call_bar">كبسولة المكالمات</string>
+    <string name="set_call_bar_on">تظهر أسفل الشاشة أثناء المكالمة</string>
+    <string name="set_need_notif">تحتاج إذن «الوصول للإشعارات» لمعرفة المكالمات، اضغط للسماح</string>
+    <string name="notif_access_hint">فعّل AAA Car L في قائمة الوصول للإشعارات. يقرأ إشعارات المكالمات فقط، ولا يحفظ شيئًا</string>
 </resources>
