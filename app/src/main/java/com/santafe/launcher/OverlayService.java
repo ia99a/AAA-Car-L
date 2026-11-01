@@ -59,7 +59,7 @@ public class OverlayService extends Service {
 
     /** هل نحتاج الخدمة: الشريط العائم (وضع هدهد) أو كبسولة الصوت، مع إذن الظهور فوق التطبيقات */
     static boolean wanted(Context c) {
-        return canDraw(c) && (Home.hudhudMode(c) || Popups.volume(c));
+        return canDraw(c) && (Home.hudhudMode(c) || (Popups.volume(c) && !CarAccess.running()));
     }
 
     /** يشغّل الخدمة إن احتجناها، ويوقفها غير ذلك */
@@ -153,7 +153,7 @@ public class OverlayService extends Service {
 
     /** ما يغيّر شكل الشريط العائم */
     private String signature() {
-        return Home.hudhudMode(this) + "|" + Popups.volume(this) + "|" + Tools.enabled(this) + "|" + Lang.get(this) + "|" + Looks.opacity(this) + "|" + Home.shown(this, Home.IQAMA)
+        return Home.hudhudMode(this) + "|" + Popups.volume(this) + "|" + CarAccess.running() + "|" + Tools.enabled(this) + "|" + Lang.get(this) + "|" + Looks.opacity(this) + "|" + Home.shown(this, Home.IQAMA)
                 + "|" + getResources().getDisplayMetrics().heightPixels;
     }
 
@@ -182,7 +182,8 @@ public class OverlayService extends Service {
         twoDigits = null;
 
         // كبسولة الصوت: تعمل فوق كل التطبيقات، ولا تختفي فوق شاشات المشغّل
-        if (Popups.volume(this)) volume = new VolumeHud(ui, wm, overlayType());
+        // (إن كانت خدمة «تحكم AAA Car L» مفعّلة فهي تعرضها بدلًا من هنا، وتخفي نافذة أندرويد أيضًا)
+        if (Popups.volume(this) && !CarAccess.running()) volume = new VolumeHud(ui, wm, overlayType());
 
         // شريط السائق العائم وفقاعة الإقامة: في وضع هدهد فقط
         if (!Home.hudhudMode(this)) return;

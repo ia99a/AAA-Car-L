@@ -60,7 +60,7 @@ final class CallBar {
 
     /** ما نعرضه من إشعار المكالمة */
     static final class Info {
-        String key, name, detail;
+        String key, pkg, name, detail;
         boolean incoming;
         long since; // بداية المكالمة (لعدّاد المدة)، 0 إن لم تُعرف
         Icon avatar;
@@ -119,9 +119,13 @@ final class CallBar {
     private FrameLayout root;
     private String shownSig;
 
-    CallBar(Context ui) {
+    private final int type;
+
+    /** type: نافذة إمكانية الوصول (من «تحكم AAA Car L») أو نافذة الظهور فوق التطبيقات */
+    CallBar(Context ui, WindowManager wm, int type) {
         this.ui = ui;
-        this.wm = (WindowManager) ui.getSystemService(Context.WINDOW_SERVICE);
+        this.wm = wm;
+        this.type = type;
         this.dp = ui.getResources().getDisplayMetrics().density;
     }
 
@@ -136,8 +140,7 @@ final class CallBar {
         if (first) {
             root = new FrameLayout(ui);
             int w = ui.getResources().getDisplayMetrics().widthPixels - px(100);
-            WindowManager.LayoutParams lp = new WindowManager.LayoutParams(w, px(88),
-                    Build.VERSION.SDK_INT >= 26 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE,
+            WindowManager.LayoutParams lp = new WindowManager.LayoutParams(w, px(88), type,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                             | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                     PixelFormat.TRANSLUCENT);
@@ -247,7 +250,8 @@ final class CallBar {
         wl.setMarginEnd(px(12));
         bar.addView(who, wl);
         if (info.open != null) {
-            View.OnClickListener open = v -> send(info.open);
+            // فتح شاشة المكالمة الأصلية بطلبك: لا نخفيها بعدها في هذه المكالمة
+            View.OnClickListener open = v -> { CallWatcher.userOpened(info.key); send(info.open); };
             av.setOnClickListener(open);
             who.setOnClickListener(open);
         }

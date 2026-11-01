@@ -174,4 +174,35 @@
     <string name="set_call_bar_on">Shows at the bottom during calls</string>
     <string name="set_need_notif">Needs notification access to see calls, tap to allow</string>
     <string name="notif_access_hint">Turn on AAA Car L in Notification access. It only reads call notifications and stores nothing</string>
+    <string name="diag_title">Capsule check</string>
+    <string name="diag_overlay">Display over other apps: %s</string>
+    <string name="diag_access">AAA Car L control: %s</string>
+    <string name="diag_notif">Notification access: %s</string>
+    <string name="diag_yes">On ✓</string>
+    <string name="diag_no">Off ✗</string>
+    <string name="diag_vol_none">Volume: no change seen yet. Change the volume, then open this check again</string>
+    <string name="diag_vol">Volume: last change %1$s s ago, from %2$s</string>
+    <string name="diag_from_keys">the volume keys (Android window hidden)</string>
+    <string name="diag_from_system">the system</string>
+    <string name="diag_keys_ignored">The volume keys do not change Android volume on this unit (its own controller does), so they are left to it</string>
+    <string name="diag_call_none">Calls: no notification from a phone app yet</string>
+    <string name="diag_call">Calls: last notification from %1$s
+Type: %2$s · Buttons: %3$s
+%4$s</string>
+    <string name="diag_call_ok">Recognised as a call ✓</string>
+    <string name="diag_call_not">Not recognised as a call ✗</string>
+    <string name="diag_hidden">Last time the original call screen was hidden: %1$s s ago (%2$s)</string>
+    <string name="diag_try_volume">Try volume</string>
+    <string name="diag_try_call">Try call</string>
+    <string name="diag_close">Close</string>
+    <string name="diag_cant">No permission to draw: turn on “AAA Car L control” or “Display over other apps”</string>
+    <string name="set_access">AAA Car L control</string>
+    <string name="set_access_on">On: hides the Android volume window and call screen</string>
+    <string name="set_access_off">Tap to turn on in Accessibility, to hide Android’s windows</string>
+    <string name="access_hint">In Accessibility open “Installed apps” or “Services” and turn on “AAA Car L control”</string>
+    <string name="access_label">AAA Car L control</string>
+    <string name="access_desc">Receives the volume keys so the AAA Car L capsule changes the volume instead of the Android window, and takes you back to the map when the call screen opens while the call capsule controls the call. It does not read any screen content or what you type; it only sees which app opened a window.</string>
+    <string name="call_demo_name">Test call</string>
+    <string name="set_popup_test">Capsule check</string>
+    <string name="set_popup_test_desc">Permissions and what was last seen, with a test button</string>
 </resources>

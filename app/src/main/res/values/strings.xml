@@ -178,4 +178,35 @@
     <string name="set_call_bar_on">تظهر أسفل الشاشة أثناء المكالمة</string>
     <string name="set_need_notif">تحتاج إذن «الوصول للإشعارات» لمعرفة المكالمات، اضغط للسماح</string>
     <string name="notif_access_hint">فعّل AAA Car L في قائمة الوصول للإشعارات. يقرأ إشعارات المكالمات فقط، ولا يحفظ شيئًا</string>
+    <string name="diag_title">فحص الكبسولتين</string>
+    <string name="diag_overlay">الظهور فوق التطبيقات: %s</string>
+    <string name="diag_access">تحكم AAA Car L: %s</string>
+    <string name="diag_notif">الوصول للإشعارات: %s</string>
+    <string name="diag_yes">مفعّل ✓</string>
+    <string name="diag_no">غير مفعّل ✗</string>
+    <string name="diag_vol_none">الصوت: ما وصل أي تغيير بعد. غيّر الصوت ثم افتح الفحص مرة ثانية</string>
+    <string name="diag_vol">الصوت: آخر تغيير قبل %1$s ثانية، من %2$s</string>
+    <string name="diag_from_keys">أزرار الصوت (نافذة أندرويد مخفية)</string>
+    <string name="diag_from_system">النظام</string>
+    <string name="diag_keys_ignored">أزرار الصوت لا تغيّر صوت أندرويد في هذه الشاشة (معالج الشاشة يتحكم بالصوت)، فتُركت لها</string>
+    <string name="diag_call_none">المكالمات: ما وصل أي إشعار من تطبيق هاتف بعد</string>
+    <string name="diag_call">المكالمات: آخر إشعار من %1$s
+النوع: %2$s · الأزرار: %3$s
+%4$s</string>
+    <string name="diag_call_ok">تعرّفنا عليه كمكالمة ✓</string>
+    <string name="diag_call_not">لم نتعرّف عليه كمكالمة ✗</string>
+    <string name="diag_hidden">آخر إخفاء لشاشة المكالمة الأصلية: قبل %1$s ثانية (%2$s)</string>
+    <string name="diag_try_volume">جرّب الصوت</string>
+    <string name="diag_try_call">جرّب المكالمة</string>
+    <string name="diag_close">إغلاق</string>
+    <string name="diag_cant">ما فيه إذن للرسم: فعّل «تحكم AAA Car L» أو «الظهور فوق التطبيقات»</string>
+    <string name="set_access">تحكم AAA Car L</string>
+    <string name="set_access_on">مفعّل: يخفي نافذة الصوت الأصلية وشاشة المكالمة</string>
+    <string name="set_access_off">اضغط للتفعيل من إمكانية الوصول، لإخفاء نوافذ أندرويد</string>
+    <string name="access_hint">في إمكانية الوصول افتح «التطبيقات المثبتة» أو «الخدمات» وفعّل «تحكم AAA Car L»</string>
+    <string name="access_label">تحكم AAA Car L</string>
+    <string name="access_desc">يستلم أزرار الصوت ليغيّر الصوت بكبسولة AAA Car L بدل نافذة أندرويد، ويعيدك للخريطة حين تفتح شاشة المكالمة ما دامت كبسولة المكالمة تتحكم بها. لا يقرأ محتوى أي شاشة ولا ما تكتب، ويرى فقط اسم التطبيق الذي فُتحت نافذته.</string>
+    <string name="call_demo_name">مكالمة تجريبية</string>
+    <string name="set_popup_test">فحص الكبسولتين</string>
+    <string name="set_popup_test_desc">حالة الأذونات وآخر ما وصل، مع زر تجربة</string>
 </resources>

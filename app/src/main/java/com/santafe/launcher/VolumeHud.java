@@ -48,6 +48,7 @@ final class VolumeHud {
             // نأخذ نوع الصوت فقط من البث، والمستوى نقرؤه من النظام نفسه
             int stream = i.getIntExtra(EXTRA_STREAM, AudioManager.STREAM_MUSIC);
             if (label(stream) == 0) return; // أصوات لا تهم السائق (مثل إمكانية الوصول)
+            Diag.volume("system", stream);
             show(stream);
         }
     };
@@ -62,11 +63,13 @@ final class VolumeHud {
         f.addAction(ACTION_MUTE);
         if (Build.VERSION.SDK_INT >= 33) ui.registerReceiver(receiver, f, Context.RECEIVER_NOT_EXPORTED);
         else ui.registerReceiver(receiver, f);
+        current = this;
     }
 
     private final int type;
 
     void release() {
+        if (current == this) current = null;
         h.removeCallbacks(hide);
         try { ui.unregisterReceiver(receiver); } catch (Exception ignored) { }
         if (added) try { wm.removeView(view); } catch (Exception ignored) { }
@@ -87,7 +90,10 @@ final class VolumeHud {
         }
     }
 
-    private void show(int stream) {
+    /** آخر كبسولة صوت عاملة (لزر «جرّب» في الإعدادات) */
+    static VolumeHud current;
+
+    void show(int stream) {
         if (am == null) return;
         int max = Math.max(1, am.getStreamMaxVolume(stream));
         int level = am.getStreamVolume(stream);

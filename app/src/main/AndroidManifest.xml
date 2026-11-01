@@ -87,6 +87,20 @@
                 android:value="Car launcher driver rail and volume capsule floating over the navigation app" />
         </service>
 
+        <!-- تحكم AAA Car L (إمكانية الوصول): لا يربطه إلا النظام، ويفعّله المستخدم بنفسه -->
+        <service
+            android:name=".CarAccess"
+            android:exported="true"
+            android:label="@string/access_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/car_access" />
+        </service>
+
         <!-- يعرف بالمكالمات من إشعار تطبيق الهاتف لعرض كبسولة المكالمة. لا يربطه إلا النظام (الصلاحية المطلوبة)،
              ولا يعمل إلا إن منحه المستخدم «الوصول للإشعارات» بنفسه -->
         <service

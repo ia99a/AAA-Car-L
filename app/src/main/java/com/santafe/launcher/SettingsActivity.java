@@ -145,24 +145,32 @@ public class SettingsActivity extends Activity {
         // كبسولة الصوت: تشغيل/إيقاف، وطلب إذن الظهور فوق التطبيقات إن لزم
         // (مفعّلة وينقصها إذن: الضغط يفتح صفحة الإذن بدل الإيقاف)
         findViewById(R.id.row_volume_hud).setOnClickListener(v -> {
-            if (Popups.volume(this) && !OverlayService.canDraw(this)) { askOverlay(); return; }
+            if (Popups.volume(this) && !OverlayService.canDraw(this) && !CarAccess.running()) { askOverlay(); return; }
             boolean on = !Popups.volume(this);
             Popups.setVolume(this, on);
-            if (on && !OverlayService.canDraw(this)) askOverlay();
+            CarAccess.settingsChanged();
+            if (on && !OverlayService.canDraw(this) && !CarAccess.running()) askOverlay();
             OverlayService.sync(this);
             bindPopups();
         });
         // كبسولة المكالمات: تحتاج أيضًا إذن الوصول للإشعارات
         findViewById(R.id.row_call_bar).setOnClickListener(v -> {
-            if (Popups.call(this) && !OverlayService.canDraw(this)) { askOverlay(); return; }
+            if (Popups.call(this) && !OverlayService.canDraw(this) && !CarAccess.running()) { askOverlay(); return; }
             if (Popups.call(this) && !Popups.notificationAccess(this)) { askNotificationAccess(); return; }
             boolean on = !Popups.call(this);
             Popups.setCall(this, on);
-            if (on && !OverlayService.canDraw(this)) askOverlay();
+            if (on && !OverlayService.canDraw(this) && !CarAccess.running()) askOverlay();
             else if (on && !Popups.notificationAccess(this)) askNotificationAccess();
             CallWatcher.refresh();
             bindPopups();
         });
+        // تحكم AAA Car L: يُفعَّل من صفحة إمكانية الوصول في أندرويد
+        findViewById(R.id.row_access).setOnClickListener(v -> {
+            Toast.makeText(this, R.string.access_hint, Toast.LENGTH_LONG).show();
+            try { startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)); }
+            catch (Exception e) { startActivity(new Intent(Settings.ACTION_SETTINGS)); }
+        });
+        findViewById(R.id.row_popup_test).setOnClickListener(v -> showCheck());
 
         findViewById(R.id.row_system).setOnClickListener(v -> {
             try { startActivity(new Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); }
@@ -221,6 +229,7 @@ public class SettingsActivity extends Activity {
         OverlayService.suppress(true);
         bindBraveWindow();
         bindPopups();
+        bindAccess();
         CallWatcher.refresh();
         if (paintBg != null) paintBg.run();
         // رجعنا من صفحة الإذن: نكمل تفعيل وضع هدهد
@@ -278,7 +287,7 @@ public class SettingsActivity extends Activity {
 
     /** حالة الكبسولتين: مفعّلة، موقفة، أو تحتاج إذنًا */
     private void bindPopups() {
-        boolean draw = OverlayService.canDraw(this);
+        boolean draw = OverlayService.canDraw(this) || CarAccess.running(); // أي من الطريقتين يكفي للرسم
         boolean vol = Popups.volume(this);
         ((android.widget.Switch) findViewById(R.id.switch_volume_hud)).setChecked(vol);
         TextView vs = findViewById(R.id.volume_hud_state);
@@ -289,6 +298,45 @@ public class SettingsActivity extends Activity {
         TextView cs = findViewById(R.id.call_bar_state);
         cs.setText(!call ? R.string.set_off : !draw ? R.string.set_need_overlay : !access ? R.string.set_need_notif : R.string.set_call_bar_on);
         cs.setTextColor(getColor(!call ? R.color.ink_faint : draw && access ? R.color.green : R.color.orange));
+    }
+
+    private void bindAccess() {
+        TextView st = findViewById(R.id.access_state);
+        boolean on = CarAccess.running();
+        st.setText(on ? R.string.set_access_on : R.string.set_access_off);
+        st.setTextColor(getColor(on ? R.color.green : R.color.orange));
+    }
+
+    /** فحص الكبسولتين: الأذونات، وآخر تغيير صوت، وآخر إشعار من تطبيق هاتف، مع زرّي تجربة */
+    private void showCheck() {
+        Context l = this;
+        long now = System.currentTimeMillis();
+        StringBuilder m = new StringBuilder();
+        m.append(getString(R.string.diag_overlay, getString(OverlayService.canDraw(l) ? R.string.diag_yes : R.string.diag_no))).append('\n');
+        m.append(getString(R.string.diag_access, getString(CarAccess.running() ? R.string.diag_yes : R.string.diag_no))).append('\n');
+        m.append(getString(R.string.diag_notif, getString(Popups.notificationAccess(l) ? R.string.diag_yes : R.string.diag_no))).append("\n\n");
+        if (Diag.volumeAt == 0) m.append(getString(R.string.diag_vol_none));
+        else m.append(getString(R.string.diag_vol, String.valueOf((now - Diag.volumeAt) / 1000),
+                getString("keys".equals(Diag.volumeFrom) ? R.string.diag_from_keys : R.string.diag_from_system)));
+        if (Diag.keysIgnored) m.append('\n').append(getString(R.string.diag_keys_ignored));
+        m.append("\n\n");
+        if (Diag.callAt == 0) m.append(getString(R.string.diag_call_none));
+        else m.append(getString(R.string.diag_call, Diag.callPkg, Diag.callCategory, Diag.callButtons,
+                getString(Diag.callRecognized ? R.string.diag_call_ok : R.string.diag_call_not)));
+        if (Diag.hiddenAt > 0) m.append('\n').append(getString(R.string.diag_hidden, String.valueOf((now - Diag.hiddenAt) / 1000), Diag.hiddenPkg));
+        new android.app.AlertDialog.Builder(this)
+                .setTitle(R.string.diag_title)
+                .setMessage(m.toString())
+                .setPositiveButton(R.string.diag_try_volume, (d, w) -> {
+                    VolumeHud v = VolumeHud.current;
+                    if (v == null) { Toast.makeText(this, R.string.diag_cant, Toast.LENGTH_LONG).show(); return; }
+                    v.show(android.media.AudioManager.STREAM_MUSIC);
+                })
+                .setNeutralButton(R.string.diag_try_call, (d, w) -> {
+                    if (!CallWatcher.demo(this)) Toast.makeText(this, R.string.diag_cant, Toast.LENGTH_LONG).show();
+                })
+                .setNegativeButton(R.string.diag_close, null)
+                .show();
     }
 
     private void askOverlay() {
