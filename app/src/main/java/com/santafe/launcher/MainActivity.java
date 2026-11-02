@@ -73,6 +73,8 @@ public class MainActivity extends Activity {
     private String hudhudPkg; // يُكتشف تلقائيًا من التطبيقات المثبتة
     private boolean introPlayed;
     private boolean active; // الشاشة ظاهرة (بين onResume و onPause)
+    private RailMedia railMedia; // أزرار الصوت داخل شريط السائق
+    private int railMediaSize = -1;
 
     @Override
     protected void attachBaseContext(android.content.Context base) {
@@ -184,6 +186,7 @@ public class MainActivity extends Activity {
         String sig = dockSignature();
         if (!sig.equals(builtSig)) { builtSig = sig; buildDock(); buildRail(); }
         else { timesDay = -1; refreshPrayer(); }
+        syncRailMedia();
         ui.post(ticker);
         gps.start();
         PrayerAlerts.schedule(this);
@@ -350,6 +353,24 @@ public class MainActivity extends Activity {
     }
 
     // ───────── شريط السائق ─────────
+
+    /** أزرار الصوت فوق زر الإعدادات في الشريط: تُبنى بالحجم المختار، أو تُزال إن أُخفيت */
+    private void syncRailMedia() {
+        int size = RailMedia.size(this);
+        if (size != railMediaSize) {
+            railMediaSize = size;
+            LinearLayout rail = findViewById(R.id.rail);
+            if (railMedia != null) rail.removeView(railMedia);
+            railMedia = null;
+            if (size != RailMedia.HIDDEN) {
+                railMedia = new RailMedia(this, size);
+                rail.addView(railMedia, rail.indexOfChild(railItems) + 1,
+                        new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            }
+        } else if (railMedia != null) {
+            railMedia.resume(); // ربما مُنح إذن الوصول للإشعارات للتو
+        }
+    }
 
     private void buildRail() {
         railItems.removeAllViews();

@@ -153,7 +153,7 @@ public class OverlayService extends Service {
 
     /** ما يغيّر شكل الشريط العائم */
     private String signature() {
-        return Home.hudhudMode(this) + "|" + Popups.volume(this) + "|" + CarAccess.running() + "|" + Tools.enabled(this) + "|" + Lang.get(this) + "|" + Looks.opacity(this) + "|" + Home.shown(this, Home.IQAMA)
+        return Home.hudhudMode(this) + "|" + Popups.volume(this) + "|" + CarAccess.running() + "|" + RailMedia.size(this) + "|" + Tools.enabled(this) + "|" + Lang.get(this) + "|" + Looks.opacity(this) + "|" + Home.shown(this, Home.IQAMA)
                 + "|" + getResources().getDisplayMetrics().heightPixels;
     }
 
@@ -218,6 +218,9 @@ public class OverlayService extends Service {
         }
         View spacer = new View(ui);
         rail.addView(spacer, new LinearLayout.LayoutParams(1, 0, 1f));
+        // أزرار الصوت فوق الرئيسية والإعدادات (تظهر فقط والصوت شغّال)
+        if (RailMedia.size(this) != RailMedia.HIDDEN)
+            rail.addView(new RailMedia(ui, RailMedia.size(this)), new LinearLayout.LayoutParams(-1, -2));
         // الرئيسية (شاشة المشغّل نفسها) والإعدادات في الأسفل
         rail.addView(bottomItem(inf, R.drawable.ic_home, R.string.home, v -> startScreen(MainActivity.class, true)));
         rail.addView(bottomItem(inf, R.drawable.ic_settings, R.string.settings_title, v -> startScreen(SettingsActivity.class, false)));

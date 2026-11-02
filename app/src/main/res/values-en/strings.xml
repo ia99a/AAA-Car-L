@@ -205,4 +205,16 @@ Type: %2$s · Buttons: %3$s
     <string name="call_demo_name">Test call</string>
     <string name="set_popup_test">Capsule check</string>
     <string name="set_popup_test_desc">Permissions and what was last seen, with a test button</string>
+    <string name="set_media">Media buttons</string>
+    <string name="media_hidden">Hidden</string>
+    <string name="media_small">Small</string>
+    <string name="media_medium">Medium</string>
+    <string name="media_large">Large</string>
+    <string name="media_back">Back 10 seconds</string>
+    <string name="media_fwd">Forward 10 seconds</string>
+    <string name="media_play">Play</string>
+    <string name="media_pause">Pause</string>
+    <string name="media_mute">Mute</string>
+    <string name="media_unmute">Unmute</string>
+    <string name="media_ten">10</string>
 </resources>

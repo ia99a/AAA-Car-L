@@ -209,4 +209,16 @@
     <string name="call_demo_name">مكالمة تجريبية</string>
     <string name="set_popup_test">فحص الكبسولتين</string>
     <string name="set_popup_test_desc">حالة الأذونات وآخر ما وصل، مع زر تجربة</string>
+    <string name="set_media">أزرار الصوت</string>
+    <string name="media_hidden">مخفية</string>
+    <string name="media_small">صغيرة</string>
+    <string name="media_medium">وسط</string>
+    <string name="media_large">كبيرة</string>
+    <string name="media_back">ترجيع ١٠ ثوانٍ</string>
+    <string name="media_fwd">تقديم ١٠ ثوانٍ</string>
+    <string name="media_play">تشغيل</string>
+    <string name="media_pause">إيقاف مؤقت</string>
+    <string name="media_mute">كتم الصوت</string>
+    <string name="media_unmute">إلغاء الكتم</string>
+    <string name="media_ten">١٠</string>
 </resources>

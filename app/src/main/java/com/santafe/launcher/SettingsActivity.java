@@ -443,6 +443,12 @@ public class SettingsActivity extends Activity {
         }
         buildNavModes(R.id.nav_modes_maps, Home.MAPS);
         buildNavModes(R.id.nav_modes_hudhud, Home.HUDHUD);
+        // أزرار الصوت في شريط السائق: مخفية، صغيرة، وسط، كبيرة (تحتاج إذن الوصول للإشعارات)
+        single(R.id.media_sizes, new CharSequence[]{getString(R.string.media_hidden), getString(R.string.media_small),
+                getString(R.string.media_medium), getString(R.string.media_large)}, RailMedia.size(this), i -> {
+            RailMedia.setSize(this, i);
+            if (i != RailMedia.HIDDEN && !Popups.notificationAccess(this)) askNotificationAccess();
+        });
         buildWidgets();
         buildOpacity();
     }
