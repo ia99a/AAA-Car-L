@@ -42,18 +42,18 @@ final class RailMedia extends LinearLayout implements MediaWatch.Listener {
         setOrientation(VERTICAL);
         setGravity(Gravity.CENTER_HORIZONTAL);
         setVisibility(GONE);
-        int btn = size == SMALL ? 30 : size == LARGE ? 42 : 36;
-        int icon = size == SMALL ? 18 : size == LARGE ? 26 : 22;
+        int btn = size == SMALL ? 24 : size == LARGE ? 32 : 28;
+        int icon = size == SMALL ? 15 : size == LARGE ? 20 : 17;
 
         View line = new View(c); // فاصل خفيف عن أدوات الشريط
         line.setBackgroundColor(c.getColor(R.color.line));
         LayoutParams ll = new LayoutParams(px(22), Math.max(1, px(1)));
-        ll.bottomMargin = px(6);
+        ll.bottomMargin = px(5);
         addView(line, ll);
 
         eq = new Eq(c);
-        LayoutParams el = new LayoutParams(px(btn * 0.45f), px(size == SMALL ? 9 : size == LARGE ? 14 : 11));
-        el.bottomMargin = px(4);
+        LayoutParams el = new LayoutParams(px(btn * 0.45f), px(size == SMALL ? 7 : size == LARGE ? 10 : 8));
+        el.bottomMargin = px(3);
         addView(eq, el);
 
         addView(seekButton(c, btn, icon, false));
@@ -71,7 +71,7 @@ final class RailMedia extends LinearLayout implements MediaWatch.Listener {
 
     private LayoutParams lp(int btn) {
         LayoutParams l = new LayoutParams(px(btn), px(btn));
-        l.bottomMargin = px(2);
+        l.bottomMargin = px(1);
         return l;
     }
 
@@ -108,7 +108,7 @@ final class RailMedia extends LinearLayout implements MediaWatch.Listener {
         TextView t = new TextView(c);
         t.setText(R.string.media_ten);
         t.setTextColor(0xFFEEF0F3);
-        t.setTextSize(icon * 0.36f);
+        t.setTextSize(icon * 0.4f);
         t.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
         t.setIncludeFontPadding(false);
         t.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
