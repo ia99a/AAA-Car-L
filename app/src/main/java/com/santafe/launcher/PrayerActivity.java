@@ -29,6 +29,13 @@ public class PrayerActivity extends Activity {
         buildTimes();
     }
 
+    @Override
+    public void onRequestPermissionsResult(int code, String[] perms, int[] res) {
+        super.onRequestPermissionsResult(code, perms, res);
+        buildCities();
+        buildTimes();
+    }
+
     static String cityKey(Context c) {
         return Lang.prefs(c).getString("city", "riyadh");
     }
@@ -38,6 +45,32 @@ public class PrayerActivity extends Activity {
         row.removeAllViews();
         float dp = getResources().getDisplayMetrics().density;
         String current = cityKey(this);
+        // «حسب الموقع» أولًا: يحسب من GPS السيارة ويكتب أقرب مدينة
+        TextView autoChip = new TextView(this);
+        boolean auto = PrayerPlace.AUTO.equals(current);
+        autoChip.setText(!auto ? getString(R.string.city_auto)
+                : PrayerPlace.hasFix(this) ? getString(R.string.city_auto_near, getString(PrayerPlace.current(this).name))
+                : getString(R.string.city_auto_wait));
+        autoChip.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_location_small, 0, 0, 0);
+        autoChip.setCompoundDrawablePadding((int) (6 * dp));
+        autoChip.setTextSize(14);
+        autoChip.setTextColor(getColor(R.color.ink));
+        autoChip.setBackgroundResource(R.drawable.chip_bg);
+        autoChip.setGravity(android.view.Gravity.CENTER);
+        autoChip.setPadding((int) (14 * dp), 0, (int) (16 * dp), 0);
+        autoChip.setSelected(auto);
+        LinearLayout.LayoutParams alp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, (int) (38 * dp));
+        alp.setMarginEnd((int) (8 * dp));
+        autoChip.setLayoutParams(alp);
+        autoChip.setOnClickListener(v -> {
+            Lang.prefs(this).edit().putString("city", PrayerPlace.AUTO).apply();
+            if (!GpsSpeed.hasPermission(this) && android.os.Build.VERSION.SDK_INT >= 23)
+                requestPermissions(new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 7);
+            PrayerAlerts.schedule(this);
+            buildCities();
+            buildTimes();
+        });
+        row.addView(autoChip);
         for (PrayerTimes.City c : PrayerTimes.CITIES) {
             TextView chip = new TextView(this);
             chip.setText(c.name);
@@ -65,7 +98,7 @@ public class PrayerActivity extends Activity {
         LinearLayout row = findViewById(R.id.times);
         row.removeAllViews();
         float dp = getResources().getDisplayMetrics().density;
-        PrayerTimes.City city = PrayerTimes.city(cityKey(this));
+        PrayerTimes.City city = PrayerPlace.current(this);
         long[] t = PrayerTimes.forDay(Calendar.getInstance(), city);
         long now = System.currentTimeMillis();
         int next = -1;

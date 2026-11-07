@@ -323,6 +323,7 @@ public class SettingsActivity extends Activity {
         if (Diag.callAt == 0) m.append(getString(R.string.diag_call_none));
         else m.append(getString(R.string.diag_call, Diag.callPkg, Diag.callCategory, Diag.callButtons,
                 getString(Diag.callRecognized ? R.string.diag_call_ok : R.string.diag_call_not)));
+        m.append("\n\n").append(getString(MediaWatch.sessionsOk() ? R.string.diag_media_sessions : R.string.diag_media_keys));
         if (Diag.hiddenAt > 0) m.append('\n').append(getString(R.string.diag_hidden, String.valueOf((now - Diag.hiddenAt) / 1000), Diag.hiddenPkg));
         new android.app.AlertDialog.Builder(this)
                 .setTitle(R.string.diag_title)

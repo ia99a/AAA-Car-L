@@ -15,11 +15,11 @@ final class PrayerRail {
     /** أوقات اليوم للمدينة المختارة (تُحسب مرة في اليوم أو عند تغيير المدينة) */
     long[] today(Context c) {
         Calendar now = Calendar.getInstance();
-        String k = PrayerActivity.cityKey(c);
+        String k = PrayerPlace.cacheKey(c);
         if (day != now.get(Calendar.DAY_OF_YEAR) || !k.equals(city) || today == null) {
             day = now.get(Calendar.DAY_OF_YEAR);
             city = k;
-            PrayerTimes.City pc = PrayerTimes.city(k);
+            PrayerTimes.City pc = PrayerPlace.current(c);
             today = PrayerTimes.forDay(now, pc);
             Calendar tm = (Calendar) now.clone();
             tm.add(Calendar.DAY_OF_YEAR, 1);

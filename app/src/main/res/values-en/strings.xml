@@ -217,4 +217,19 @@ Type: %2$s · Buttons: %3$s
     <string name="media_mute">Mute</string>
     <string name="media_unmute">Unmute</string>
     <string name="media_ten">10</string>
+    <string name="city_hafar">Hafar Al-Batin</string>
+    <string name="city_rafha">Rafha</string>
+    <string name="city_arar">Arar</string>
+    <string name="city_turaif">Turaif</string>
+    <string name="city_uwayqilah">Al-Uwayqilah</string>
+    <string name="city_qurayyat">Al-Qurayyat</string>
+    <string name="city_tabarjal">Tabarjal</string>
+    <string name="city_sakaka">Sakaka</string>
+    <string name="city_dumah">Dumat Al-Jandal</string>
+    <string name="city_khafji">Al-Khafji</string>
+    <string name="city_auto">By location</string>
+    <string name="city_auto_near">By location · near %s</string>
+    <string name="city_auto_wait">By location · waiting for GPS</string>
+    <string name="diag_media_sessions">Media buttons: see the playing app and seek precisely ✓</string>
+    <string name="diag_media_keys">Media buttons: using media keys only (allow notification access for precise control)</string>
 </resources>

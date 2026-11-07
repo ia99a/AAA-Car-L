@@ -35,7 +35,35 @@ public final class PrayerTimes {
             new City("abha", R.string.city_abha, 18.2164, 42.5053),
             new City("jazan", R.string.city_jazan, 16.8892, 42.5511),
             new City("tabuk", R.string.city_tabuk, 28.3838, 36.5550),
+            // الشمال والحدود الشمالية
+            new City("hafar", R.string.city_hafar, 28.4328, 45.9708),
+            new City("rafha", R.string.city_rafha, 29.6202, 43.4948),
+            new City("arar", R.string.city_arar, 30.9753, 41.0381),
+            new City("turaif", R.string.city_turaif, 31.6725, 38.6637),
+            new City("uwayqilah", R.string.city_uwayqilah, 30.3375, 42.2486),
+            new City("qurayyat", R.string.city_qurayyat, 31.3317, 37.3428),
+            new City("tabarjal", R.string.city_tabarjal, 30.4995, 38.2160),
+            new City("sakaka", R.string.city_sakaka, 29.9697, 40.2064),
+            new City("dumah", R.string.city_dumah, 29.8117, 39.8681),
+            new City("khafji", R.string.city_khafji, 28.4391, 48.4913),
     };
+
+    /** أقرب مدينة من القائمة إلى إحداثية (لاسم «حسب الموقع») */
+    public static City nearest(double lat, double lng) {
+        City best = CITIES[0];
+        double bd = Double.MAX_VALUE;
+        for (City c : CITIES) {
+            double dl = Math.toRadians(c.lat - lat), dg = Math.toRadians(c.lng - lng) * Math.cos(Math.toRadians(lat));
+            double d = dl * dl + dg * dg;
+            if (d < bd) { bd = d; best = c; }
+        }
+        return best;
+    }
+
+    /** موقع بإحداثياته (لـ«حسب الموقع»)، واسمه اسم أقرب مدينة */
+    public static City at(double lat, double lng) {
+        return new City("auto", nearest(lat, lng).name, lat, lng);
+    }
 
     public static City city(String key) {
         for (City c : CITIES) if (c.key.equals(key)) return c;

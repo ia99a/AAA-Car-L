@@ -41,7 +41,7 @@ public final class PrayerAlerts extends BroadcastReceiver {
     /** يجدول التنبيه القادم (يُستدعى من الشاشة الرئيسية وبعد كل تنبيه وعند تغيير المدينة) */
     static void schedule(Context c) {
         if (!enabled(c)) { cancel(c); return; }
-        PrayerTimes.City city = PrayerTimes.city(PrayerActivity.cityKey(c));
+        PrayerTimes.City city = PrayerPlace.current(c);
         Calendar now = Calendar.getInstance();
         Calendar tm = (Calendar) now.clone();
         tm.add(Calendar.DAY_OF_YEAR, 1);

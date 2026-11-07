@@ -42,7 +42,10 @@ final class GpsSpeed implements LocationListener {
     }
 
     @Override public void onLocationChanged(Location l) {
-        if (l != null) listener.onSpeed(l.hasSpeed() ? l.getSpeed() * 3.6 : 0);
+        if (l == null) return;
+        listener.onSpeed(l.hasSpeed() ? l.getSpeed() * 3.6 : 0);
+        // أوقات الصلاة «حسب الموقع»: إن تحرّكت ٣ كم أو أكثر نعيد جدولة التنبيه بالموقع الجديد
+        if (PrayerPlace.update(ctx, l.getLatitude(), l.getLongitude())) PrayerAlerts.schedule(ctx);
     }
 
     @Override public void onStatusChanged(String p, int s, Bundle b) { }

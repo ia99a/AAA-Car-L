@@ -94,6 +94,32 @@ public class OverlayService extends Service {
         startForegroundCompat();
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
         build();
+        startPassiveLocation();
+    }
+
+    // أوقات الصلاة «حسب الموقع» وأنت في هدهد: نستفيد من مواقع GPS التي يطلبها هدهد نفسه (بلا تكلفة إضافية)
+    private android.location.LocationManager lm;
+    private final android.location.LocationListener passive = new android.location.LocationListener() {
+        @Override public void onLocationChanged(android.location.Location l) {
+            if (l != null && PrayerPlace.update(OverlayService.this, l.getLatitude(), l.getLongitude())) {
+                PrayerAlerts.schedule(OverlayService.this);
+                prayer.invalidate();
+                refresh();
+            }
+        }
+        @Override public void onStatusChanged(String p, int st, android.os.Bundle b) { }
+        @Override public void onProviderEnabled(String p) { }
+        @Override public void onProviderDisabled(String p) { }
+    };
+
+    @android.annotation.SuppressLint("MissingPermission")
+    private void startPassiveLocation() {
+        if (!GpsSpeed.hasPermission(this)) return;
+        lm = (android.location.LocationManager) getSystemService(LOCATION_SERVICE);
+        if (lm == null) return;
+        try {
+            lm.requestLocationUpdates(android.location.LocationManager.PASSIVE_PROVIDER, 60_000, 1000, passive, android.os.Looper.getMainLooper());
+        } catch (Exception ignored) { }
     }
 
     @Override
@@ -113,6 +139,7 @@ public class OverlayService extends Service {
     @Override
     public void onDestroy() {
         h.removeCallbacks(tick);
+        if (lm != null) try { lm.removeUpdates(passive); } catch (Exception ignored) { }
         removeViews();
         instance = null;
         super.onDestroy();

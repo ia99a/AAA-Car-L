@@ -45,6 +45,23 @@ final class MediaWatch {
 
     private static final Runnable recheck = MediaWatch::notifyAll_;
 
+    // بديل بلا إذن (أو تطبيق بلا جلسة وسائط): نعرف أن صوتًا يعمل من AudioManager، ونتحكم بأزرار الوسائط
+    private static long lastMusic;
+    private static boolean musicWas, visWas;
+    private static final Runnable poll = new Runnable() {
+        @Override public void run() {
+            if (listeners.isEmpty() || am == null) return;
+            long now = SystemClock.elapsedRealtime();
+            boolean m = am.isMusicActive();
+            if (m) lastMusic = now;
+            boolean vis = m || (lastMusic > 0 && now - lastMusic < KEEP_AFTER_PAUSE);
+            if (active == null && (vis != visWas || m != musicWas)) notifyAll_(); // تغيّر: ظهر الصوت، توقف، أو انتهت المهلة
+            visWas = vis;
+            musicWas = m;
+            h.postDelayed(this, 1500);
+        }
+    };
+
     static void add(Context c, Listener l) {
         if (!listeners.contains(l)) listeners.add(l);
         start(c);
@@ -57,9 +74,11 @@ final class MediaWatch {
 
     /** يبدأ المتابعة (ويعيد المحاولة كل مرة حتى يُمنح الإذن) */
     private static void start(Context c) {
-        if (started) return;
         Context app = c.getApplicationContext();
         am = (AudioManager) app.getSystemService(Context.AUDIO_SERVICE);
+        h.removeCallbacks(poll);
+        h.post(poll);
+        if (started) return;
         msm = (MediaSessionManager) app.getSystemService(Context.MEDIA_SESSION_SERVICE);
         cn = new ComponentName(app, CallWatcher.class);
         if (msm == null) return;
@@ -77,6 +96,7 @@ final class MediaWatch {
         started = false;
         setActive(null);
         h.removeCallbacks(recheck);
+        h.removeCallbacks(poll);
     }
 
     private static void refreshPick() {
@@ -123,28 +143,42 @@ final class MediaWatch {
     // ───────── للواجهة ─────────
 
     static boolean playing() {
+        if (active == null) return am != null && am.isMusicActive();
         int s = state(active);
         return s == PlaybackState.STATE_PLAYING || s == PlaybackState.STATE_BUFFERING;
     }
 
     /** تظهر الأزرار: صوت شغّال، أو أوقف قبل أقل من دقيقة */
     static boolean visible() {
-        if (active == null) return false;
+        if (active == null) // بلا جلسة: صوت يعمل الآن أو توقف قبل أقل من دقيقة
+            return am != null && (am.isMusicActive() || (lastMusic > 0 && SystemClock.elapsedRealtime() - lastMusic < KEEP_AFTER_PAUSE));
         if (playing()) return true;
         return state(active) == PlaybackState.STATE_PAUSED && SystemClock.elapsedRealtime() - lastPlaying < KEEP_AFTER_PAUSE;
     }
 
+    /** نرى جلسات الوسائط (بإذن الوصول للإشعارات)؟ وإلا نعمل بأزرار الوسائط فقط */
+    static boolean sessionsOk() { return started; }
+
     static String packageName() { return active == null ? null : active.getPackageName(); }
 
+    /** زر وسائط للتطبيق الذي يشغّل الصوت الآن (حين لا نرى جلسته) */
+    private static void key(int code) {
+        if (am == null) return;
+        am.dispatchMediaKeyEvent(new android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, code));
+        am.dispatchMediaKeyEvent(new android.view.KeyEvent(android.view.KeyEvent.ACTION_UP, code));
+        h.postDelayed(MediaWatch::notifyAll_, 300);
+    }
+
     static void toggle() {
-        if (active == null) return;
+        if (active == null) { key(android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE); return; }
         if (playing()) active.getTransportControls().pause(); else active.getTransportControls().play();
     }
 
     /** تقديم أو ترجيع بالثواني: إلى موضع محدد إن دعمه التطبيق، وإلا تقديم/ترجيع التطبيق نفسه */
     static void seek(long deltaMs) {
         MediaController c = active;
-        PlaybackState s = c == null ? null : c.getPlaybackState();
+        if (c == null) { key(deltaMs > 0 ? android.view.KeyEvent.KEYCODE_MEDIA_FAST_FORWARD : android.view.KeyEvent.KEYCODE_MEDIA_REWIND); return; }
+        PlaybackState s = c.getPlaybackState();
         if (s == null) return;
         long actions = s.getActions();
         if ((actions & PlaybackState.ACTION_SEEK_TO) != 0 && s.getPosition() >= 0) {

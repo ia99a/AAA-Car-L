@@ -493,11 +493,11 @@ public class MainActivity extends Activity {
     private void refreshPrayer() {
         if (prayerName == null) return;
         java.util.Calendar now = java.util.Calendar.getInstance();
-        String city = PrayerActivity.cityKey(this);
+        String city = PrayerPlace.cacheKey(this);
         if (timesDay != now.get(java.util.Calendar.DAY_OF_YEAR) || !city.equals(timesCity)) {
             timesDay = now.get(java.util.Calendar.DAY_OF_YEAR);
             timesCity = city;
-            PrayerTimes.City c = PrayerTimes.city(city);
+            PrayerTimes.City c = PrayerPlace.current(this);
             todayTimes = PrayerTimes.forDay(now, c);
             java.util.Calendar tm = (java.util.Calendar) now.clone();
             tm.add(java.util.Calendar.DAY_OF_YEAR, 1);

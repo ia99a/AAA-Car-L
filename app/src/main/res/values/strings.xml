@@ -221,4 +221,19 @@
     <string name="media_mute">كتم الصوت</string>
     <string name="media_unmute">إلغاء الكتم</string>
     <string name="media_ten">١٠</string>
+    <string name="city_hafar">حفر الباطن</string>
+    <string name="city_rafha">رفحاء</string>
+    <string name="city_arar">عرعر</string>
+    <string name="city_turaif">طريف</string>
+    <string name="city_uwayqilah">العويقيلة</string>
+    <string name="city_qurayyat">القريات</string>
+    <string name="city_tabarjal">طبرجل</string>
+    <string name="city_sakaka">سكاكا</string>
+    <string name="city_dumah">دومة الجندل</string>
+    <string name="city_khafji">الخفجي</string>
+    <string name="city_auto">حسب الموقع</string>
+    <string name="city_auto_near">حسب الموقع · قرب %s</string>
+    <string name="city_auto_wait">حسب الموقع · بانتظار GPS</string>
+    <string name="diag_media_sessions">أزرار الصوت: ترى التطبيق الشغّال وتقدّم وترجّع بالثانية ✓</string>
+    <string name="diag_media_keys">أزرار الصوت: تعمل بأزرار الوسائط فقط (فعّل الوصول للإشعارات لتحكم أدق)</string>
 </resources>
