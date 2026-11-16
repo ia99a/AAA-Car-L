@@ -232,4 +232,25 @@ Type: %2$s · Buttons: %3$s
     <string name="city_auto_wait">By location · waiting for GPS</string>
     <string name="diag_media_sessions">Media buttons: see the playing app and seek precisely ✓</string>
     <string name="diag_media_keys">Media buttons: using media keys only (allow notification access for precise control)</string>
+    <string name="set_update">Check for update</string>
+    <string name="upd_state">Current version %s · tap to check GitHub</string>
+    <string name="upd_checking">Checking for update…</string>
+    <string name="upd_latest">You have the latest version (%s)</string>
+    <string name="upd_available">New version %s</string>
+    <string name="upd_ask">You have %1$s and the new one is %2$s. It downloads, checks the signature, then Android asks you to confirm.</string>
+    <string name="upd_install">Download and install</string>
+    <string name="upd_later">Later</string>
+    <string name="upd_downloading">Downloading the update…</string>
+    <string name="upd_no_net">Could not reach GitHub. Check the internet and try again</string>
+    <string name="upd_bad_file">The downloaded file did not match the signature or checksum, so it was not installed</string>
+    <string name="upd_allow_install">Allow the launcher to install apps, then come back and tap update again</string>
+    <string name="upd_failed">Not installed</string>
+    <string name="diag_report">Unit report</string>
+    <string name="rep_title">Unit report (take a photo and send it)</string>
+    <string name="rep_device">Device</string>
+    <string name="rep_version">Launcher version</string>
+    <string name="rep_keys">Volume presses that reached Android</string>
+    <string name="rep_media">Android media volume</string>
+    <string name="rep_windows">Last windows opened (newest first)</string>
+    <string name="rep_apps">Phone and sound apps on the unit</string>
 </resources>

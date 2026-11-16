@@ -89,6 +89,7 @@ public class CarAccess extends AccessibilityService {
         int code = e.getKeyCode();
         if (code != KeyEvent.KEYCODE_VOLUME_UP && code != KeyEvent.KEYCODE_VOLUME_DOWN && code != KeyEvent.KEYCODE_VOLUME_MUTE)
             return false;
+        if (e.getAction() == KeyEvent.ACTION_DOWN) Diag.volumeKeys++;
         if (volume == null || am == null || Diag.keysIgnored || am.isVolumeFixed()) return false;
         if (e.getAction() != KeyEvent.ACTION_DOWN) return true; // رفع الإصبع: نكتمه مع ضغطته
         int stream = activeStream();
@@ -130,6 +131,7 @@ public class CarAccess extends AccessibilityService {
         if (e == null || e.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED || e.getPackageName() == null) return;
         String pkg = e.getPackageName().toString();
         if (pkg.equals(getPackageName())) return;
+        Diag.window(pkg);
         lastPkg = pkg;
         lastPkgAt = SystemClock.uptimeMillis();
         CallWatcher.onWindowOpened(this, pkg);

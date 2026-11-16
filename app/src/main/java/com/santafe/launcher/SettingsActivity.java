@@ -171,6 +171,9 @@ public class SettingsActivity extends Activity {
             catch (Exception e) { startActivity(new Intent(Settings.ACTION_SETTINGS)); }
         });
         findViewById(R.id.row_popup_test).setOnClickListener(v -> showCheck());
+        // التحديث: يتحقق من GitHub وينزّل ويثبّت بعد التحقق من التوقيع
+        ((TextView) findViewById(R.id.update_state)).setText(getString(R.string.upd_state, Updater.installedName(this)));
+        findViewById(R.id.row_update).setOnClickListener(v -> Updater.check(this));
 
         findViewById(R.id.row_system).setOnClickListener(v -> {
             try { startActivity(new Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); }
@@ -336,7 +339,40 @@ public class SettingsActivity extends Activity {
                 .setNeutralButton(R.string.diag_try_call, (d, w) -> {
                     if (!CallWatcher.demo(this)) Toast.makeText(this, R.string.diag_cant, Toast.LENGTH_LONG).show();
                 })
-                .setNegativeButton(R.string.diag_close, null)
+                .setNegativeButton(R.string.diag_report, (d, w) -> showReport())
+                .show();
+    }
+
+    /** تقرير الشاشة: ما أحتاجه لضبط الصوت والمكالمات على نوع شاشتك (صوّره وأرسله) */
+    private void showReport() {
+        android.media.AudioManager am = (android.media.AudioManager) getSystemService(AUDIO_SERVICE);
+        StringBuilder m = new StringBuilder();
+        m.append(getString(R.string.rep_device)).append(": ").append(android.os.Build.MANUFACTURER).append(" / ")
+                .append(android.os.Build.MODEL).append(" / ").append(android.os.Build.HARDWARE)
+                .append(" · Android ").append(android.os.Build.VERSION.RELEASE).append('\n');
+        m.append(getString(R.string.rep_version)).append(": ").append(Updater.installedName(this)).append("\n\n");
+        m.append(getString(R.string.rep_keys)).append(": ").append(Diag.volumeKeys).append('\n');
+        if (am != null) m.append(getString(R.string.rep_media)).append(": ")
+                .append(am.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)).append(" / ")
+                .append(am.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC))
+                .append(am.isVolumeFixed() ? " (fixed)" : "").append("\n\n");
+        m.append(getString(R.string.rep_windows)).append(":\n").append(Diag.windows()).append("\n\n");
+        // تطبيقات الهاتف والبلوتوث والصوت الظاهرة في القائمة (الاسم والحزمة فقط)
+        StringBuilder apps = new StringBuilder();
+        android.content.pm.PackageManager pm = getPackageManager();
+        for (android.content.pm.ResolveInfo r : pm.queryIntentActivities(
+                new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0)) {
+            String p = r.activityInfo.packageName, l = p.toLowerCase(java.util.Locale.ROOT);
+            if (l.contains("bt") || l.contains("blue") || l.contains("phone") || l.contains("dial") || l.contains("call")
+                    || l.contains("syu") || l.contains("fyt") || l.contains("ms") || l.contains("audio") || l.contains("sound")
+                    || l.contains("car") || l.contains("mcu"))
+                apps.append("• ").append(r.loadLabel(pm)).append(" — ").append(p).append('\n');
+        }
+        m.append(getString(R.string.rep_apps)).append(":\n").append(apps.length() == 0 ? "-" : apps.toString());
+        new android.app.AlertDialog.Builder(this)
+                .setTitle(R.string.rep_title)
+                .setMessage(m.toString())
+                .setPositiveButton(R.string.diag_close, null)
                 .show();
     }
 

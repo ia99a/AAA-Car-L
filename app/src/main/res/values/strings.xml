@@ -236,4 +236,25 @@
     <string name="city_auto_wait">حسب الموقع · بانتظار GPS</string>
     <string name="diag_media_sessions">أزرار الصوت: ترى التطبيق الشغّال وتقدّم وترجّع بالثانية ✓</string>
     <string name="diag_media_keys">أزرار الصوت: تعمل بأزرار الوسائط فقط (فعّل الوصول للإشعارات لتحكم أدق)</string>
+    <string name="set_update">التحقق من التحديث</string>
+    <string name="upd_state">الإصدار الحالي %s · اضغط للتحقق من GitHub</string>
+    <string name="upd_checking">جاري التحقق من التحديث…</string>
+    <string name="upd_latest">عندك آخر إصدار (%s)</string>
+    <string name="upd_available">إصدار جديد %s</string>
+    <string name="upd_ask">عندك %1$s والجديد %2$s. ينزّل ويتحقق من التوقيع ثم يطلب تأكيد أندرويد للتثبيت.</string>
+    <string name="upd_install">تنزيل وتثبيت</string>
+    <string name="upd_later">لاحقًا</string>
+    <string name="upd_downloading">جاري تنزيل التحديث…</string>
+    <string name="upd_no_net">ما قدرت أوصل لـ GitHub. تأكد من الإنترنت وجرّب مرة ثانية</string>
+    <string name="upd_bad_file">الملف المنزّل ما طابق التوقيع أو البصمة، فلم يُثبَّت</string>
+    <string name="upd_allow_install">اسمح للمشغّل بتثبيت التطبيقات ثم ارجع واضغط التحديث مرة ثانية</string>
+    <string name="upd_failed">ما تم التثبيت</string>
+    <string name="diag_report">تقرير الشاشة</string>
+    <string name="rep_title">تقرير الشاشة (صوّره وأرسله)</string>
+    <string name="rep_device">الجهاز</string>
+    <string name="rep_version">إصدار المشغّل</string>
+    <string name="rep_keys">ضغطات الصوت اللي وصلت لأندرويد</string>
+    <string name="rep_media">صوت الوسائط في أندرويد</string>
+    <string name="rep_windows">آخر النوافذ اللي انفتحت (الأحدث أول)</string>
+    <string name="rep_apps">تطبيقات الهاتف والصوت في الشاشة</string>
 </resources>

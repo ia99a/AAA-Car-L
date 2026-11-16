@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- إذن عادي بلا نافذة موافقة: لمعرفة هل حجب الإعلانات (DNS خاص) مفعّل -->
+    <!-- الإنترنت للتحديث فقط: يعمل حين تضغط «التحقق من التحديث»، ولا يتصل إلا بـ GitHub -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- الموقع: لعرض سرعتك الحالية من GPS. يُطلب مرة واحدة، ويعمل التطبيق بدونه -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -112,6 +115,11 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+
+        <!-- نتيجة تثبيت التحديث (من أندرويد فقط عبر PendingIntent خاص بالمشغّل) -->
+        <receiver
+            android:name=".Updater$Result"
+            android:exported="false" />
 
         <receiver
             android:name=".PrayerAlerts"
