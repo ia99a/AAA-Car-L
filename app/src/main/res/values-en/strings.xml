@@ -201,7 +201,7 @@ Type: %2$s · Buttons: %3$s
     <string name="set_access_off">Tap to turn on in Accessibility, to hide Android’s windows</string>
     <string name="access_hint">In Accessibility open “Installed apps” or “Services” and turn on “AAA Car L control”</string>
     <string name="access_label">AAA Car L control</string>
-    <string name="access_desc">Receives the volume keys so the AAA Car L capsule changes the volume instead of the Android window, and takes you back to the map when the call screen opens while the call capsule controls the call. It does not read any screen content or what you type; it only sees which app opened a window.</string>
+    <string name="access_desc">Receives the volume keys so the AAA Car L capsule changes the volume instead of the Android window. For calls it reads only the call screen of the phone or Bluetooth app and covers it with the launcher design, whose buttons press that screen’s buttons. It reads no other app or anything you type, and stores nothing.</string>
     <string name="call_demo_name">Test call</string>
     <string name="set_popup_test">Capsule check</string>
     <string name="set_popup_test_desc">Permissions and what was last seen, with a test button</string>
@@ -253,4 +253,5 @@ Type: %2$s · Buttons: %3$s
     <string name="rep_media">Android media volume</string>
     <string name="rep_windows">Last windows opened (newest first)</string>
     <string name="rep_apps">Phone and sound apps on the unit</string>
+    <string name="rep_share">Share report</string>
 </resources>

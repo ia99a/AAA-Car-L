@@ -205,7 +205,7 @@
     <string name="set_access_off">اضغط للتفعيل من إمكانية الوصول، لإخفاء نوافذ أندرويد</string>
     <string name="access_hint">في إمكانية الوصول افتح «التطبيقات المثبتة» أو «الخدمات» وفعّل «تحكم AAA Car L»</string>
     <string name="access_label">تحكم AAA Car L</string>
-    <string name="access_desc">يستلم أزرار الصوت ليغيّر الصوت بكبسولة AAA Car L بدل نافذة أندرويد، ويعيدك للخريطة حين تفتح شاشة المكالمة ما دامت كبسولة المكالمة تتحكم بها. لا يقرأ محتوى أي شاشة ولا ما تكتب، ويرى فقط اسم التطبيق الذي فُتحت نافذته.</string>
+    <string name="access_desc">يستلم أزرار الصوت ليغيّر الصوت بكبسولة AAA Car L بدل نافذة أندرويد. وفي المكالمات يقرأ شاشة المكالمة في تطبيق الهاتف أو البلوتوث فقط، ويغطّيها بتصميم المشغّل وأزراره تضغط أزرارها. لا يقرأ أي تطبيق آخر ولا ما تكتب، ولا يحفظ شيئًا.</string>
     <string name="call_demo_name">مكالمة تجريبية</string>
     <string name="set_popup_test">فحص الكبسولتين</string>
     <string name="set_popup_test_desc">حالة الأذونات وآخر ما وصل، مع زر تجربة</string>
@@ -257,4 +257,5 @@
     <string name="rep_media">صوت الوسائط في أندرويد</string>
     <string name="rep_windows">آخر النوافذ اللي انفتحت (الأحدث أول)</string>
     <string name="rep_apps">تطبيقات الهاتف والصوت في الشاشة</string>
+    <string name="rep_share">مشاركة التقرير</string>
 </resources>

@@ -53,6 +53,7 @@ final class CallBar {
     /** زر واحد من أزرار المكالمة */
     static final class Btn {
         final int kind; final CharSequence title; final PendingIntent intent; final Icon icon;
+        Runnable run; // بديل الإشعار: يضغط الزر داخل شاشة المكالمة الأصلية (من خدمة التحكم)
         Btn(int kind, CharSequence title, PendingIntent intent, Icon icon) {
             this.kind = kind; this.title = title; this.intent = intent; this.icon = icon;
         }
@@ -168,6 +169,9 @@ final class CallBar {
         r.animate().alpha(0f).translationY(px(24)).setDuration(220)
                 .withEndAction(() -> { try { wm.removeView(r); } catch (Exception ignored) { } }).start();
     }
+
+    /** الكبسولة نفسها (لغطاء شاشة المكالمة الأصلية أيضًا) */
+    View view(Info info) { return build(info); }
 
     private View build(Info info) {
         LinearLayout bar = new LinearLayout(ui);
@@ -311,7 +315,7 @@ final class CallBar {
         v.setContentDescription(desc);
         v.setClickable(true);
         v.setFocusable(true);
-        v.setOnClickListener(x -> send(b.intent));
+        v.setOnClickListener(x -> { if (b.run != null) b.run.run(); else send(b.intent); });
         v.setLayoutParams(new LinearLayout.LayoutParams(w, px(58)));
         return v;
     }

@@ -372,6 +372,12 @@ public class SettingsActivity extends Activity {
         new android.app.AlertDialog.Builder(this)
                 .setTitle(R.string.rep_title)
                 .setMessage(m.toString())
+                .setNeutralButton(R.string.rep_share, (d, w) -> {
+                    // ترسله نصًا (واتساب أو غيره) بدل التصوير
+                    Intent send = new Intent(Intent.ACTION_SEND).setType("text/plain")
+                            .putExtra(Intent.EXTRA_TEXT, "AAA Car L\n" + m);
+                    try { startActivity(Intent.createChooser(send, getString(R.string.rep_share))); } catch (Exception ignored) { }
+                })
                 .setPositiveButton(R.string.diag_close, null)
                 .show();
     }

@@ -14,7 +14,9 @@ import android.view.accessibility.AccessibilityEvent;
  *  ١) تستلم أزرار الصوت قبل أندرويد، فتغيّر الصوت بلا نافذة أندرويد وتعرض كبسولتنا بدلها.
  *  ٢) تعرف أن شاشة المكالمة الأصلية فُتحت، فترجع للرئيسية ما دامت كبسولة المكالمة تتحكم بالمكالمة كاملة.
  *  ٣) ترسم الكبسولتين بنافذة إمكانية الوصول، فلا تحتاج إذن «الظهور فوق التطبيقات».
- * لا تقرأ محتوى أي شاشة (canRetrieveWindowContent=false): ترى فقط اسم التطبيق الذي فُتحت نافذته.
+ *  ٤) في الشاشات التي لا يضع تطبيق البلوتوث فيها إشعار مكالمة: تقرأ شاشة المكالمة الأصلية فقط
+ *     (تطبيقات الهاتف والبلوتوث) وتغطّيها بتصميمنا، وأزرارنا تضغط أزرارها (CallScreen).
+ * لا تقرأ محتوى أي تطبيق آخر، ولا تحفظ شيئًا.
  */
 public class CarAccess extends AccessibilityService {
 
@@ -24,6 +26,7 @@ public class CarAccess extends AccessibilityService {
     private AudioManager am;
     private VolumeHud volume;
     private CallBar bar;
+    private CallScreen screen;
     private boolean keysChecked; // تأكدنا أن أزرار الصوت تغيّر صوت أندرويد فعلًا
 
     static boolean running() { return instance != null; }
@@ -37,6 +40,7 @@ public class CarAccess extends AccessibilityService {
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
         am = (AudioManager) getSystemService(AUDIO_SERVICE);
         applySettings();
+        screen = new CallScreen(this, ui, wm);
         OverlayService.sync(this); // الخدمة العائمة لم تعد تحتاج كبسولة صوت خاصة بها
         CallWatcher.refresh();
     }
@@ -63,6 +67,8 @@ public class CarAccess extends AccessibilityService {
         volume = null;
         if (bar != null) bar.hide();
         bar = null;
+        if (screen != null) screen.release();
+        screen = null;
         if (instance == this) instance = null;
     }
 
@@ -128,8 +134,11 @@ public class CarAccess extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent e) {
-        if (e == null || e.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED || e.getPackageName() == null) return;
-        String pkg = e.getPackageName().toString();
+        if (e == null) return;
+        String evPkg = e.getPackageName() == null ? null : e.getPackageName().toString();
+        if (screen != null && !getPackageName().equals(evPkg)) screen.poke(evPkg); // شاشة مكالمة بلا إشعار؟
+        if (e.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED || evPkg == null) return;
+        String pkg = evPkg;
         if (pkg.equals(getPackageName())) return;
         Diag.window(pkg);
         lastPkg = pkg;

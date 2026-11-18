@@ -38,6 +38,9 @@ public class CallWatcher extends NotificationListenerService {
 
     static void userOpened(String key) { userOpenedKey = key; }
 
+    /** هل تعرض كبسولة المكالمة الآن مكالمة من إشعار؟ (فلا حاجة لقراءة شاشة المكالمة) */
+    static boolean hasNotificationCall() { return current != null && !"demo".equals(current.key); }
+
     @Override
     public void onListenerConnected() {
         instance = this;
@@ -130,7 +133,7 @@ public class CallWatcher extends NotificationListenerService {
 
     // ───────── التعرّف على المكالمة ─────────
 
-    private static boolean phoneApp(String pkg) {
+    static boolean phoneApp(String pkg) {
         String p = pkg.toLowerCase(Locale.ROOT);
         return p.contains("dialer") || p.contains("incallui") || p.contains("telecom") || p.contains("phone")
                 || p.contains("bluetooth") || p.contains(".bt") || p.contains("btphone") || p.contains("contacts");
